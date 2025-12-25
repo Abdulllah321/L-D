@@ -36,8 +36,10 @@ const AdminSchema = new Schema<IAdmin>(
 );
 
 // Hash password before saving
-AdminSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+AdminSchema.pre('save', async function (this: IAdmin, next: any) {
+  if (!this.isModified('password')) {
+    return next();
+  }
   
   try {
     const salt = await bcrypt.genSalt(10);
@@ -55,7 +57,8 @@ AdminSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Prevent model recompilation during developmentAdmin = mongoose.models.Admin || mongoose.model<IAdmin>('Admin', AdminSchema);
+// Prevent model recompilation during development
+const Admin = mongoose.models.Admin || mongoose.model<IAdmin>('Admin', AdminSchema);
 
 export default Admin;
 
