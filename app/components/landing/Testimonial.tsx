@@ -44,7 +44,7 @@ export function TestimonialCard({
   return (
     <div
       className={cn(
-        'mb-4 flex w-full cursor-pointer break-inside-avoid flex-col items-center justify-between gap-6 rounded-xl p-4',
+        'mb-4 flex w-full max-w-full cursor-pointer break-inside-avoid flex-col items-center justify-between gap-6 rounded-xl p-4',
         // theme styles
         'border-border bg-card/50 border shadow-sm',
         // hover effect
@@ -52,6 +52,7 @@ export function TestimonialCard({
         className,
       )}
       {...props}
+      style={{ maxWidth: '100%', boxSizing: 'border-box' }}
     >
       <div className="text-muted-foreground text-sm font-normal select-none">
         {description}
@@ -226,10 +227,11 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="relative container py-10">
-      {/* Decorative elements */}
-      <div className="absolute top-20 -left-20 z-10 h-64 w-64 rounded-full bg-teal-500/5 blur-3xl" />
-      <div className="absolute -right-20 bottom-20 z-10 h-64 w-64 rounded-full bg-blue-500/5 blur-3xl" />
+    <section className="relative w-full overflow-x-hidden py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Decorative elements */}
+        <div className="absolute top-20 -left-10 z-10 h-64 w-64 rounded-full bg-teal-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute -right-10 bottom-20 z-10 h-64 w-64 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -249,39 +251,43 @@ export default function Testimonials() {
         </h3>
       </motion.div>
 
-      <div className="relative mt-6 max-h-screen overflow-hidden">
-        <div className="gap-4 md:columns-2 xl:columns-3 2xl:columns-4">
-          {Array(Math.ceil(testimonials.length / 3))
-            .fill(0)
-            .map((_, i) => (
-              <Marquee
-                vertical
-                key={i}
-                className={cn({
-                  '[--duration:60s]': i === 1,
-                  '[--duration:30s]': i === 2,
-                  '[--duration:70s]': i === 3,
-                })}
-              >
-                {testimonials.slice(i * 3, (i + 1) * 3).map((card, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{
-                      delay: Math.random() * 0.8,
-                      duration: 1.2,
-                    }}
+        <div className="relative mt-6 max-h-screen overflow-hidden w-full">
+          <div className="gap-x-4 md:columns-2 xl:columns-3 2xl:columns-4 w-full overflow-x-hidden" style={{ columnGap: '1rem' }}>
+            {Array(Math.ceil(testimonials.length / 3))
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="w-full overflow-x-hidden break-inside-avoid">
+                  <Marquee
+                    vertical
+                    className={cn("w-full overflow-x-hidden", {
+                      '[--duration:60s]': i === 1,
+                      '[--duration:30s]': i === 2,
+                      '[--duration:70s]': i === 3,
+                    })}
                   >
-                    <TestimonialCard {...card} />
-                  </motion.div>
-                ))}
-              </Marquee>
-            ))}
+                    {testimonials.slice(i * 3, (i + 1) * 3).map((card, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{
+                          delay: Math.random() * 0.8,
+                          duration: 1.2,
+                        }}
+                        className="w-full break-inside-avoid"
+                        style={{ maxWidth: '100%' }}
+                      >
+                        <TestimonialCard {...card} />
+                      </motion.div>
+                    ))}
+                  </Marquee>
+                </div>
+              ))}
+          </div>
+          <div className="from-background pointer-events-none absolute inset-x-0 bottom-0 h-1/4 w-full bg-gradient-to-t from-20%"></div>
+          <div className="from-background pointer-events-none absolute inset-x-0 top-0 h-1/4 w-full bg-gradient-to-b from-20%"></div>
         </div>
-        <div className="from-background pointer-events-none absolute inset-x-0 bottom-0 h-1/4 w-full bg-gradient-to-t from-20%"></div>
-        <div className="from-background pointer-events-none absolute inset-x-0 top-0 h-1/4 w-full bg-gradient-to-b from-20%"></div>
       </div>
     </section>
   );

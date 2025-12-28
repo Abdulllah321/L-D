@@ -8,10 +8,12 @@ import { motion } from "framer-motion";
 import Testimonial from "./components/landing/Testimonial";
 import Logo from "@/components/ui/sparkles-logo";
 import Footer from "./components/landing/Footer";
+import Header from "./components/Header";
 
 export default function Home() {
   return (
     <div className="">
+      <Header />
       <main className="bg-gray-50 ">
         <HeroSection />
         <LearningTracksIntro />

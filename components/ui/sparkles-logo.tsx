@@ -111,7 +111,7 @@ export default function Logo() {
       >
         Learning & Development
       </motion.p>
-    </div>
+      </div>
     </div>
   );
 }

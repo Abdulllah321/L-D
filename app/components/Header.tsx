@@ -1,8 +1,8 @@
 "use client";
 import Image from 'next/image'
 import clsx from "clsx";
-import Link from "next/link";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,43 +34,47 @@ const Header = () => {
   };
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-        isScrolled
-          ? scrollDirection === 'down'
-            ? "-translate-y-full opacity-0"
-            : "translate-y-0 opacity-100 bg-white/90 backdrop-blur-xl shadow-lg border-b border-gray-200/50"
-          : "translate-y-0 opacity-100 bg-white/70 backdrop-blur-md"
-      }`}
-      style={{
-        transform: isScrolled && scrollDirection === 'down' 
-          ? 'translateY(-100%)' 
-          : 'translateY(0)',
+    <motion.header
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ 
+        y: scrollDirection === 'down' && isScrolled ? -100 : 0,
+        opacity: scrollDirection === 'down' && isScrolled ? 0 : 1
       }}
+      transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+      className={clsx(
+        "relative  top-0 left-0 right-0 w-full z-50 transition-all duration-300",
+        isScrolled
+          ? "bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200/60"
+          : "bg-white/60 backdrop-blur-md"
+      )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-18">
-          <button onClick={() => scrollToSection("hero")}>
+        <div className="flex items-center justify-between h-16 md:h-20">
+          <motion.button 
+            onClick={() => scrollToSection("hero")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <Logo />
-          </button>
+          </motion.button>
           <Navigation />
           <Button />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
 
 const Logo = () => {
     return (
-        <div className="flex items-center group cursor-pointer">
-            <div className="relative border shadow-md p-1 rounded-full">
+        <div className="flex items-center gap-3 group cursor-pointer">
+            <div className="relative p-1.5 rounded-xl bg-gradient-to-br from-teal-500/10 to-blue-500/10 border border-teal-200/30 shadow-sm transition-all duration-300 group-hover:shadow-md group-hover:border-teal-300/50">
                 <Image 
                     src="/logo.png" 
                     alt="Logo" 
-                    width={40} 
-                    height={40}
-                    className="object-contain transition-transform duration-300  rounded-full group-hover:scale-110"
+                    width={36} 
+                    height={36}
+                    className="object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
                 />
             </div>
         </div>
@@ -96,9 +100,26 @@ const navItems = {
 export function Navigation() {
   const [activePath, setActivePath] = useState("hero");
 
-  const isActiveLink = (path: string) => {
-    return activePath === path;
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = Object.keys(navItems);
+      const scrollPosition = window.scrollY + 100;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActivePath(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -110,33 +131,32 @@ export function Navigation() {
 
   return (
     <nav className="hidden md:flex items-center justify-center">
-      <div className="glass flex items-center justify-between overflow-hidden rounded-xl bg-gray-100/50 backdrop-blur-sm border border-gray-200/50 shadow-sm">
-        {Object.entries(navItems).map(([path, { name }], index, array) => {
-          const isActive = isActiveLink(path);
-          const isFirst = index === 0;
-          const isLast = index === array.length - 1;
-          const prevPath = index > 0 ? array[index - 1][0] : null;
-          const nextPath =
-            index < array.length - 1 ? array[index + 1][0] : null;
+      <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-gray-100/80 backdrop-blur-sm border border-gray-200/60 shadow-sm">
+        {Object.entries(navItems).map(([path, { name }]) => {
+          const isActive = activePath === path;
 
           return (
-            <button
+            <motion.button
+              key={path}
               onClick={() => scrollToSection(path)}
               className={clsx(
-                "flex items-center justify-center bg-black p-1.5 px-4 text-sm text-white transition-all duration-300 dark:bg-white dark:text-black cursor-pointer",
+                "relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-xl",
                 isActive
-                  ? "mx-2 rounded-xl font-semibold text-sm"
-                  : clsx(
-                      (isActiveLink(prevPath || "") || isFirst) &&
-                        "rounded-l-xl",
-                      (isActiveLink(nextPath || "") || isLast) &&
-                        "rounded-r-xl"
-                    )
+                  ? "text-white"
+                  : "text-gray-600 hover:text-gray-900"
               )}
-              key={path}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {name}
-            </button>
+              {isActive && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute inset-0 bg-gradient-to-r from-teal-600 to-blue-600 rounded-xl shadow-md"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10">{name}</span>
+            </motion.button>
           );
         })}
       </div>
@@ -155,33 +175,34 @@ const Button = () => {
   };
 
   return (
-    <button 
+    <motion.button 
       onClick={() => scrollToSection("catalog")}
-      className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block hover:scale-105 transition-transform duration-300"
+      className="group relative overflow-hidden rounded-full bg-gradient-to-r from-teal-600 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/30"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
     >
-      <span className="absolute inset-0 overflow-hidden rounded-full">
-        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-      </span>
-      <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+      <span className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="relative flex items-center gap-2 z-10">
         <span>Explore Catalog</span>
-        <svg
+        <motion.svg
           fill="none"
           height="16"
           viewBox="0 0 24 24"
           width="16"
           xmlns="http://www.w3.org/2000/svg"
+          animate={{ x: [0, 4, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <path
             d="M10.75 8.75L14.25 12L10.75 15.25"
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth="1.5"
+            strokeWidth="2"
           />
-        </svg>
+        </motion.svg>
       </div>
-      <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-    </button>
+    </motion.button>
   );
 }
 

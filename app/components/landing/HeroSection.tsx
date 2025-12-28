@@ -856,7 +856,7 @@ export default function HeroSection() {
   return (
     <div
       id="hero"
-      className="relative min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-20 overflow-hidden"
+      className="w-full overflow-x-hidden relative min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-20 overflow-hidden"
     >
       <DecorativeSVG />
       <FloatingIcons />

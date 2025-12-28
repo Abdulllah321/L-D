@@ -50,7 +50,12 @@ export async function PUT(
     const data = await request.json();
     const { title, summary, iconName, coreTrainings, refreshers } = data;
 
-    const designation = await Designation.findOne({ id: params.id.toUpperCase() });
+    // Try to find by _id first, then by id field
+    let designation = await Designation.findById(params.id);
+    
+    if (!designation) {
+      designation = await Designation.findOne({ id: params.id.toUpperCase() });
+    }
 
     if (!designation) {
       return NextResponse.json(
@@ -59,10 +64,10 @@ export async function PUT(
       );
     }
 
-    // Update fields
-    if (title) designation.title = title;
-    if (summary) designation.summary = summary;
-    if (iconName) designation.iconName = iconName;
+    // Update fields (supporting both simplified and legacy fields)
+    if (title !== undefined) designation.title = title;
+    if (summary !== undefined) designation.summary = summary;
+    if (iconName !== undefined) designation.iconName = iconName;
     if (coreTrainings !== undefined) designation.coreTrainings = parseInt(coreTrainings);
     if (refreshers !== undefined) designation.refreshers = parseInt(refreshers);
 
@@ -98,7 +103,12 @@ export async function DELETE(
 
     await connectDB();
 
-    const designation = await Designation.findOneAndDelete({ id: params.id.toUpperCase() });
+    // Try to find by _id first, then by id field
+    let designation = await Designation.findByIdAndDelete(params.id);
+    
+    if (!designation) {
+      designation = await Designation.findOneAndDelete({ id: params.id.toUpperCase() });
+    }
 
     if (!designation) {
       return NextResponse.json(

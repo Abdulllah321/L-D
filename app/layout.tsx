@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Sora } from "next/font/google";
 import "./globals.css";
-import Header from "./components/Header";
+import { ToastProvider } from "@/components/ui/toast";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
@@ -32,8 +32,9 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} ${sora.variable} font-sans antialiased`}
       >
-        <Header />
+        <ToastProvider>
         {children}
+        </ToastProvider>
       </body>
     </html>
   );
