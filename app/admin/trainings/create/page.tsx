@@ -17,6 +17,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
+import { Suspense } from "react";
 
 interface TrainingDay {
   day: number;
@@ -59,7 +60,15 @@ interface Training {
   schedule: TrainingDay[];
 }
 
-export default function CreateTrainingPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateTrainingPage />
+    </Suspense>
+  );
+}
+
+function CreateTrainingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();

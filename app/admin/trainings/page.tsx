@@ -30,6 +30,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Sortable from "sortablejs";
+import { Suspense } from "react";
 
 interface Designation {
   _id?: string;
@@ -267,7 +268,15 @@ function AssignTrainingSection({ designation, trainings, onAssign }: AssignTrain
   );
 }
 
-export default function TrainingsPage() {
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TrainingsPage />
+    </Suspense>
+  );
+}
+
+function TrainingsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [designations, setDesignations] = useState<Designation[]>([]);
