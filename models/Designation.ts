@@ -7,6 +7,7 @@ export interface IDesignation extends Document {
   iconName: string;
   coreTrainings: number;
   refreshers: number;
+  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,11 +46,19 @@ const DesignationSchema = new Schema<IDesignation>(
       required: true,
       min: 0,
     },
+    order: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Index for efficient sorting
+DesignationSchema.index({ order: 1 });
 
 // Prevent model recompilation during development
 const Designation =

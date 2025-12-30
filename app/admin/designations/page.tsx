@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Head from "next/head";
 import { 
   Plus, 
   Search,
@@ -22,12 +23,32 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Sortable from "sortablejs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
 
 interface Designation {
   _id?: string;
   id: string;
   title: string;
+  order?: number;
 }
 
 interface Training {
@@ -48,6 +69,135 @@ interface AllTraining {
 }
 
 type TrackType = 'normal' | 'hi-po';
+
+// Sortable Designation Item Component
+function SortableDesignationItem({ 
+  designation, 
+  searchQuery,
+  onSelect 
+}: { 
+  designation: Designation; 
+  searchQuery: string;
+  onSelect: (designation: Designation) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: designation._id || designation.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-gray-300 transition-all duration-300 ease-out group cursor-pointer ${
+        isDragging ? 'ring-2 ring-teal-500 shadow-lg scale-105 z-50' : ''
+      }`}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('.drag-handle-designation')) {
+          e.stopPropagation();
+          return;
+        }
+        onSelect(designation);
+      }}
+    >
+      <div className="flex items-start gap-3">
+        {!searchQuery && (
+          <div
+            className="drag-handle-designation cursor-grab active:cursor-grabbing p-2 hover:bg-teal-50 rounded transition-colors shrink-0 touch-none"
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-5 h-5 text-gray-500 hover:text-teal-600" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-900">
+              {designation.title}
+            </h3>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors shrink-0 ml-2" />
+          </div>
+          {!searchQuery && (
+            <p className="text-xs text-gray-400 mt-2">
+              <span className="font-medium text-teal-600">Drag handle</span> to reorder • Click to manage trainings
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Sortable Training Item Component
+function SortableTrainingItem({
+  training,
+  onRemove,
+}: {
+  training: Training;
+  onRemove: (assignmentId: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: training.assignmentId || training._id || '' });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all group cursor-move ${
+        isDragging ? 'ring-2 ring-teal-500 shadow-lg scale-105 z-50' : ''
+      }`}
+    >
+      <div
+        className="drag-handle cursor-move p-1 hover:bg-gray-100 rounded transition-colors"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-4 h-4 text-gray-400" />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-400 w-6">
+            {(training.order || 0) + 1}.
+          </span>
+          <h4 className="text-sm font-semibold text-gray-900">
+            {training.programTitle}
+          </h4>
+        </div>
+      </div>
+      <button
+        onClick={() => onRemove(training.assignmentId!)}
+        className="p-1.5 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+      >
+        <X className="w-4 h-4 text-red-500" />
+      </button>
+    </div>
+  );
+}
 
 export default function DesignationsPage() {
   const router = useRouter();
@@ -76,12 +226,15 @@ export default function DesignationsPage() {
   }, []);
 
   useEffect(() => {
+    // Sort designations by order
+    const sorted = [...designations].sort((a, b) => (a.order || 0) - (b.order || 0));
+    
     if (searchQuery.trim() === "") {
-      setFilteredDesignations(designations);
+      setFilteredDesignations(sorted);
     } else {
       const query = searchQuery.toLowerCase();
       setFilteredDesignations(
-        designations.filter(
+        sorted.filter(
           (d) =>
             d.id.toLowerCase().includes(query) ||
             d.title.toLowerCase().includes(query)
@@ -127,9 +280,8 @@ export default function DesignationsPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        const desigs = data.designations || data || [];
+        const desigs = (data.designations || data || []).sort((a: Designation, b: Designation) => (a.order || 0) - (b.order || 0));
         setDesignations(desigs);
-        setFilteredDesignations(desigs);
       }
     } catch (error) {
       console.error("Error fetching designations:", error);
@@ -299,34 +451,81 @@ export default function DesignationsPage() {
     setEditingId(null);
   };
 
-  const handleSortEnd = async (evt: any) => {
-    try {
-      const items = Array.from(evt.to.children);
-      const assignmentIds = items.map((item: any) => {
-        const assignmentId = item.getAttribute('data-assignment-id');
-        return assignmentId;
-      }).filter(Boolean);
+  const handleTrainingDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
 
-      // Update order for each assignment
-      const updates = assignmentIds.map((assignmentId, index) => {
-        return fetch(`/api/training-assignments/${assignmentId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ order: index }),
-        });
+    if (!over || !selectedDesignation || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = trainings.findIndex(
+      (t) => String(t.assignmentId) === String(active.id) || String(t._id) === String(active.id)
+    );
+    const newIndex = trainings.findIndex(
+      (t) => String(t.assignmentId) === String(over.id) || String(t._id) === String(over.id)
+    );
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Optimistic update - update UI immediately
+    const newOrder = arrayMove(trainings, oldIndex, newIndex);
+    // Update order numbers for display
+    const updatedOrder = newOrder.map((training, index) => ({
+      ...training,
+      order: index,
+    }));
+    setTrainings(updatedOrder);
+
+    // Update API in background using bulk reorder endpoint
+    try {
+      const items = updatedOrder
+        .filter((training: Training) => training.assignmentId)
+        .map((training: Training, index: number) => ({
+          assignmentId: training.assignmentId!,
+          order: index,
+        }));
+
+      if (items.length === 0) {
+        return;
+      }
+
+      const response = await fetch(`/api/training-assignments/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ items }),
       });
 
-      await Promise.all(updates);
-      await fetchTrainingsForDesignation(selectedDesignation!.id, selectedTrack);
+      if (!response.ok) {
+        throw new Error('Failed to reorder trainings');
+      }
     } catch (error) {
       console.error("Error updating order:", error);
+      // Revert on error
+      await fetchTrainingsForDesignation(selectedDesignation.id, selectedTrack);
+      alert("Failed to save training order. Reverting changes.");
     }
   };
 
   const handleAssignTraining = async (training: AllTraining) => {
     if (!selectedDesignation) return;
 
+    // Optimistic update - add training immediately
+    const newTraining: Training = {
+      _id: training._id,
+      assignmentId: `temp-${Date.now()}`, // Temporary ID
+      programTitle: training.programTitle,
+      order: trainings.length,
+      designationId: selectedDesignation.id,
+      trackType: selectedTrack,
+    };
+    setTrainings([...trainings, newTraining]);
+    setShowSearchModal(false);
+    setSearchTrainingQuery("");
+
+    // Update API in background
     try {
       const response = await fetch(`/api/training-assignments`, {
         method: "POST",
@@ -340,15 +539,29 @@ export default function DesignationsPage() {
       });
 
       if (response.ok) {
-        await fetchTrainingsForDesignation(selectedDesignation.id, selectedTrack);
-        setShowSearchModal(false);
-        setSearchTrainingQuery("");
+        const data = await response.json();
+        // Update with real assignment ID from response
+        const realAssignmentId = data.assignment?._id || data.assignment?.id;
+        if (realAssignmentId) {
+          setTrainings(prev => prev.map(t => 
+            t.assignmentId === newTraining.assignmentId 
+              ? { ...t, assignmentId: realAssignmentId }
+              : t
+          ));
+        } else {
+          // Refresh to get complete data if assignment ID not in response
+          await fetchTrainingsForDesignation(selectedDesignation.id, selectedTrack);
+        }
       } else {
+        // Revert on error
+        setTrainings(trainings);
         const data = await response.json();
         alert(data.error || "Failed to assign training");
       }
     } catch (error) {
       console.error("Error assigning training:", error);
+      // Revert on error
+      setTrainings(trainings);
       alert("Failed to assign training");
     }
   };
@@ -356,49 +569,106 @@ export default function DesignationsPage() {
   const handleRemoveTraining = async (assignmentId: string) => {
     if (!selectedDesignation) return;
 
+    // Optimistic update - remove training immediately
+    const trainingToRemove = trainings.find(t => t.assignmentId === assignmentId);
+    const updatedTrainings = trainings.filter(t => t.assignmentId !== assignmentId);
+    // Reorder remaining trainings
+    const reorderedTrainings = updatedTrainings.map((t, index) => ({
+      ...t,
+      order: index,
+    }));
+    setTrainings(reorderedTrainings);
+
+    // Update API in background
     try {
       const response = await fetch(`/api/training-assignments/${assignmentId}`, {
         method: "DELETE",
         credentials: "include",
       });
 
-      if (response.ok) {
-        await fetchTrainingsForDesignation(selectedDesignation.id, selectedTrack);
-      } else {
+      if (!response.ok) {
+        // Revert on error
+        setTrainings(trainings);
         const data = await response.json();
         alert(data.error || "Failed to remove training");
       }
+      // If successful, UI is already updated, no need to refresh
     } catch (error) {
       console.error("Error removing training:", error);
+      // Revert on error
+      setTrainings(trainings);
       alert("Failed to remove training");
     }
   };
 
-  useEffect(() => {
-    if (!showTrainingAssignment || !selectedDesignation) return;
+  const handleDesignationDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    let sortableInstance: any = null;
-    const timeoutId = setTimeout(() => {
-      const container = document.getElementById(`trainings-list-${selectedTrack}`);
-      if (container && trainings.length > 0) {
-        sortableInstance = Sortable.create(container, {
-          animation: 150,
-          handle: '.drag-handle',
-          ghostClass: 'opacity-50',
-          onEnd: (evt) => {
-            handleSortEnd(evt);
-          },
-        });
-      }
-    }, 100);
+    if (!over || active.id === over.id) {
+      return;
+    }
 
-    return () => {
-      clearTimeout(timeoutId);
-      if (sortableInstance && sortableInstance.destroy) {
-        sortableInstance.destroy();
+    const oldIndex = filteredDesignations.findIndex(
+      (d) => String(d._id) === String(active.id) || String(d.id) === String(active.id)
+    );
+    const newIndex = filteredDesignations.findIndex(
+      (d) => String(d._id) === String(over.id) || String(d.id) === String(over.id)
+    );
+
+    if (oldIndex === -1 || newIndex === -1) {
+      return;
+    }
+
+    // Optimistic update - update UI immediately
+    const newOrder = arrayMove(filteredDesignations, oldIndex, newIndex).map((d, index) => ({
+      ...d,
+      order: index,
+    }));
+    setFilteredDesignations(newOrder);
+    
+    // Update main designations array with new order values
+    const updatedDesignations = designations.map(designation => {
+      const updated = newOrder.find(d => (d._id || d.id) === (designation._id || designation.id));
+      return updated ? { ...designation, order: updated.order } : designation;
+    }).sort((a, b) => (a.order || 0) - (b.order || 0));
+    setDesignations(updatedDesignations);
+
+    // Update API in background using bulk reorder endpoint
+    try {
+      const items = newOrder.map((designation: Designation, index: number) => ({
+        id: designation._id || designation.id,
+        order: index,
+      }));
+
+      const response = await fetch(`/api/designations/reorder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ items }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to reorder designations');
       }
-    };
-  }, [showTrainingAssignment, trainings, selectedDesignation, selectedTrack]);
+    } catch (error) {
+      console.error("Error updating designation order:", error);
+      // Revert on error
+      await fetchDesignations();
+      alert("Failed to save designation order. Reverting changes.");
+    }
+  };
+
+  // Setup sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const filteredAllTrainings = allTrainings.filter((training) => {
     const query = searchTrainingQuery.toLowerCase();
@@ -586,32 +856,53 @@ export default function DesignationsPage() {
                 {searchQuery ? "Try adjusting your search" : "Add your first designation to get started"}
               </p>
             </motion.div>
-          ) : (
+          ) : searchQuery.trim() !== "" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              <AnimatePresence>
-                {filteredDesignations.map((designation, index) => (
-                  <motion.div
-                    key={designation._id || designation.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-gray-300 transition-all group cursor-pointer"
-                    onClick={() => {
-                      setSelectedDesignation(designation);
-                      setShowTrainingAssignment(true);
-                    }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {designation.title}
-                      </h3>
-                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              {filteredDesignations.map((designation) => (
+                <div
+                  key={designation._id || designation.id}
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-gray-300 transition-all group cursor-pointer"
+                  onClick={() => {
+                    setSelectedDesignation(designation);
+                    setShowTrainingAssignment(true);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {designation.title}
+                    </h3>
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </div>
+                </div>
+              ))}
             </div>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDesignationDragEnd}
+            >
+              <SortableContext
+                items={filteredDesignations.map(d => d._id || d.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div 
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                >
+                  {filteredDesignations.map((designation) => (
+                    <SortableDesignationItem
+                      key={designation._id || designation.id}
+                      designation={designation}
+                      searchQuery={searchQuery}
+                      onSelect={(d) => {
+                        setSelectedDesignation(d);
+                        setShowTrainingAssignment(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </main>
       </div>
@@ -742,38 +1033,26 @@ export default function DesignationsPage() {
                           </div>
                         </div>
                       </div>
-                      <div
-                        id={`trainings-list-${selectedTrack}`}
-                        className="p-4 space-y-2"
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleTrainingDragEnd}
                       >
-                        {trainings.map((training, index) => (
-                          <div
-                            key={training.assignmentId || training._id || index}
-                            data-assignment-id={training.assignmentId}
-                            className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all group cursor-move"
-                          >
-                            <div className="drag-handle cursor-move p-1 hover:bg-gray-100 rounded transition-colors">
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-gray-400 w-6">
-                                  {index + 1}.
-                                </span>
-                                <h4 className="text-sm font-semibold text-gray-900">
-                                  {training.programTitle}
-                                </h4>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => handleRemoveTraining(training.assignmentId!)}
-                              className="p-1.5 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                              <X className="w-4 h-4 text-red-500" />
-                            </button>
+                        <SortableContext
+                          items={trainings.map(t => t.assignmentId || t._id || '')}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="p-4 space-y-2">
+                            {trainings.map((training, index) => (
+                              <SortableTrainingItem
+                                key={training.assignmentId || training._id || index}
+                                training={{ ...training, order: index }}
+                                onRemove={handleRemoveTraining}
+                              />
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        </SortableContext>
+                      </DndContext>
                     </div>
                   ) : (
                     <div className="text-center py-12 bg-gray-50 border border-gray-200 rounded-xl">

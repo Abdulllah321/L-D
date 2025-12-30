@@ -6,12 +6,13 @@ import { getAuthFromRequest } from '@/lib/auth';
 // GET single designation (public)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
+    const { id } = await params;
 
-    const designation = await Designation.findOne({ id: params.id.toUpperCase() });
+    const designation = await Designation.findOne({ id: id.toUpperCase() });
 
     if (!designation) {
       return NextResponse.json(
@@ -33,7 +34,7 @@ export async function GET(
 // PUT update designation (admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = getAuthFromRequest(request);
@@ -46,15 +47,16 @@ export async function PUT(
     }
 
     await connectDB();
+    const { id } = await params;
 
     const data = await request.json();
-    const { title, summary, iconName, coreTrainings, refreshers } = data;
+    const { title, summary, iconName, coreTrainings, refreshers, order } = data;
 
     // Try to find by _id first, then by id field
-    let designation = await Designation.findById(params.id);
+    let designation = await Designation.findById(id);
     
     if (!designation) {
-      designation = await Designation.findOne({ id: params.id.toUpperCase() });
+      designation = await Designation.findOne({ id: id.toUpperCase() });
     }
 
     if (!designation) {
@@ -70,6 +72,7 @@ export async function PUT(
     if (iconName !== undefined) designation.iconName = iconName;
     if (coreTrainings !== undefined) designation.coreTrainings = parseInt(coreTrainings);
     if (refreshers !== undefined) designation.refreshers = parseInt(refreshers);
+    if (order !== undefined && order !== null) designation.order = parseInt(order);
 
     await designation.save();
 
@@ -89,7 +92,7 @@ export async function PUT(
 // DELETE designation (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = getAuthFromRequest(request);
@@ -102,12 +105,13 @@ export async function DELETE(
     }
 
     await connectDB();
+    const { id } = await params;
 
     // Try to find by _id first, then by id field
-    let designation = await Designation.findByIdAndDelete(params.id);
+    let designation = await Designation.findByIdAndDelete(id);
     
     if (!designation) {
-      designation = await Designation.findOneAndDelete({ id: params.id.toUpperCase() });
+      designation = await Designation.findOneAndDelete({ id: id.toUpperCase() });
     }
 
     if (!designation) {

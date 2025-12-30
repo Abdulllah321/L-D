@@ -8,7 +8,7 @@ export async function GET() {
   try {
     await connectDB();
 
-    const designations = await Designation.find({}).sort({ id: 1 });
+    const designations = await Designation.find({}).sort({ order: 1, id: 1 });
 
     return NextResponse.json({ designations }, { status: 200 });
   } catch (error: any) {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
-    const { id, title, summary, iconName, coreTrainings, refreshers } = data;
+    const { id, title, summary, iconName, coreTrainings, refreshers, order } = data;
 
     if (!id || !title || !summary || !iconName || coreTrainings === undefined || refreshers === undefined) {
       return NextResponse.json(
@@ -61,6 +61,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the highest order to append at the end if order not provided
+    let finalOrder = order !== undefined ? parseInt(order) : 0;
+    if (order === undefined || order === null) {
+      const maxOrderResult = await Designation.findOne({}).sort({ order: -1 });
+      finalOrder = maxOrderResult ? (maxOrderResult.order || 0) + 1 : 0;
+    }
+
     const designation = new Designation({
       id: id.toUpperCase(),
       title,
@@ -68,6 +75,7 @@ export async function POST(request: NextRequest) {
       iconName,
       coreTrainings: parseInt(coreTrainings),
       refreshers: parseInt(refreshers),
+      order: finalOrder,
     });
 
     await designation.save();
