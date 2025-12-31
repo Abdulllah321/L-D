@@ -3,9 +3,11 @@
 import { IDesignation } from '@/models/Designation';
 import { ITraining } from '@/models/Training';
 import { useState, useMemo } from 'react';
-import DesignationRow from './DesignationRow';
 import TrainingModal from './TrainingModal';
 import { motion } from 'motion/react';
+import Timeline from './Timeline';
+import Footer from '@/app/components/landing/Footer'; // Updated Footer Import
+import Header from '@/app/components/Header';
 
 interface CatalogViewProps {
     designations: IDesignation[];
@@ -15,67 +17,84 @@ interface CatalogViewProps {
 export default function CatalogView({ designations, allTrainings }: CatalogViewProps) {
     const [selectedTraining, setSelectedTraining] = useState<ITraining | null>(null);
 
-    // Helper to normalize strings for comparison
+    // Filter Helper
     const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-    // Map trainings to designations based on targetAudience matching designation title
     const designationTrainingsMap = useMemo(() => {
         const map = new Map<string, ITraining[]>();
-
         designations.forEach(d => {
             const dTitle = normalize(d.title);
-
             const matchedTrainings = allTrainings.filter(t => {
                 const tAudience = normalize(t.targetAudience);
-                // Simple heuristic: if audience includes title words or is "All"
-                // Also checks if Designation Title is included in Target Audience string
                 return tAudience.includes(dTitle) || dTitle.includes(tAudience) || tAudience.includes('all');
             });
-
-            // Remove duplicates if any logic causes them (filter handles unique checks per iteration but we might refine)
             map.set(d.id, matchedTrainings);
         });
-
         return map;
     }, [designations, allTrainings]);
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 pb-20">
+        <div className="min-h-screen bg-zinc-50 selection:bg-teal-500/30 text-zinc-900 font-sans">
 
-            {/* Hero Section */}
-            <div className="relative overflow-hidden bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-zinc-800/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))]" />
-                <div className="container mx-auto px-4 py-24 relative z-10">
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-5xl md:text-7xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 mb-6"
-                    >
-                        Learning <span className="text-violet-600">Catalog</span>
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-xl text-zinc-500 dark:text-zinc-400 max-w-2xl"
-                    >
-                        Explore our comprehensive training programs tailored for your professional growth.
-                        Navigate through designations to find the perfect path for you.
-                    </motion.p>
-                </div>
+            <Header />
+
+            {/* Background Patterns - Light Mode */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-teal-50/50 via-white to-transparent" />
+                <div className="absolute -top-[20%] right-0 w-[600px] h-[600px] bg-blue-100/40 rounded-full blur-[120px]" />
+                <div className="absolute top-[40%] left-[-10%] w-[500px] h-[500px] bg-violet-100/40 rounded-full blur-[100px]" />
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02]" />
             </div>
 
-            {/* Main Content */}
-            <div className="space-y-4">
-                {designations.map((designation) => (
-                    <DesignationRow
-                        key={designation.id}
-                        designation={designation}
-                        trainings={designationTrainingsMap.get(designation.id) || []}
-                        onSelectTraining={setSelectedTraining}
+            <main className="relative z-10">
+
+                {/* Hero Section */}
+                <section className="relative pt-32 pb-12 overflow-hidden text-center">
+                    <div className="container mx-auto px-6">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="inline-block p-2 px-4 rounded-full bg-white border border-zinc-200 shadow-sm mb-6"
+                        >
+                            <span className="text-sm font-medium bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                                ✨ Enhanced Learning Pathways
+                            </span>
+                        </motion.div>
+
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1, duration: 0.8 }}
+                            className="text-5xl md:text-7xl font-bold tracking-tighter text-zinc-900 mb-6"
+                        >
+                            Explore Your <br className="hidden md:block" />
+                            <span className="bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-500 bg-clip-text text-transparent">
+                                Growth Journey
+                            </span>
+                        </motion.h1>
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2, duration: 0.8 }}
+                            className="max-w-2xl mx-auto text-lg text-zinc-600 leading-relaxed"
+                        >
+                            Navigate through our role-based learning catalog. Connect with the skills required to excel at every stage of your career.
+                        </motion.p>
+                    </div>
+                </section>
+
+                {/* Timeline Content */}
+                <section className="py-12">
+                    <Timeline
+                        designations={designations}
+                        trainingsMap={designationTrainingsMap}
                     />
-                ))}
-            </div>
+                </section>
+            </main>
+
+            <Footer />
 
             <TrainingModal
                 isOpen={!!selectedTraining}

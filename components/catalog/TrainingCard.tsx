@@ -2,50 +2,80 @@
 
 import { ITraining } from '@/models/Training';
 import { motion } from 'motion/react';
-import { Clock } from 'lucide-react';
+import { IconClock, IconUsers, IconBook, IconStar } from '@tabler/icons-react';
+import { clsx } from "clsx";
 
 interface TrainingCardProps {
     training: ITraining;
-    onClick: (training: ITraining) => void;
-    index: number;
+    onClick?: () => void;
+    // We can derive layoutId from training._id, but passing unique prefix if needed is good practice
+    layoutId?: string;
 }
 
-export default function TrainingCard({ training, onClick, index }: TrainingCardProps) {
+const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
+    // If no specific layoutId provided, use training id
+    const id = layoutId || training._id;
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1, duration: 0.4 }}
+            layoutId={`card-${id}`}
+            onClick={onClick}
             whileHover={{ y: -5, scale: 1.02 }}
-            onClick={() => onClick(training)}
-            className="min-w-[280px] w-[280px] bg-white dark:bg-zinc-800 rounded-xl shadow-sm hover:shadow-xl border border-zinc-100 dark:border-zinc-700 transition-all cursor-pointer p-5 flex flex-col justify-between h-[180px] group relative overflow-hidden shrink-0 snap-start"
+            className={clsx(
+                "group relative overflow-hidden rounded-2xl cursor-pointer",
+                "bg-white/95 backdrop-blur-md border border-zinc-200", // Increased opacity
+                "shadow-lg hover:shadow-xl hover:shadow-teal-500/10 hover:border-teal-500/50",
+                "transition-all duration-300"
+            )}
         >
-            <div className="absolute top-0 left-0 w-1 h-full bg-violet-500/50 group-hover:bg-violet-500 transition-colors" />
+            {/* Gradient Glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
 
-            <div>
-                <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">{training.trainingPartner}</span>
+            <div className="relative p-6 space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1 w-full">
+                        {/* Partner Badge */}
+                        <motion.div layoutId={`badge-${id}`} className="inline-block">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
+                                {training.isHalfDay ? 'Half Day' : training.durationFormat}
+                            </span>
+                        </motion.div>
+
+                        {/* Title */}
+                        <motion.h3
+                            layoutId={`title-${id}`}
+                            className="text-xl font-bold text-zinc-900 group-hover:text-teal-600 transition-colors mt-1"
+                        >
+                            {training.programTitle}
+                        </motion.h3>
+                    </div>
                 </div>
-                <h3 className="font-semibold text-zinc-800 dark:text-zinc-100 line-clamp-2 leading-tight group-hover:text-violet-600 transition-colors">
-                    {training.programTitle}
-                </h3>
-            </div>
 
-            <div className="mt-4">
-                <div className="flex items-center gap-1.5 text-xs text-zinc-500 mb-3">
-                    <Clock size={14} />
-                    <span>{training.durationFormat}</span>
-                </div>
+                {/* Description - Fade out on expand usually, but we keep it static for card */}
+                <p className="text-zinc-600 text-sm line-clamp-2">
+                    {training.programObjective}
+                </p>
 
-                <div className="flex flex-wrap gap-1">
-                    {training.competencies.functional?.slice(0, 2).map((c, i) => (
-                        <span key={i} className="text-[10px] bg-zinc-100 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-300 truncate max-w-[120px]">
-                            {c}
-                        </span>
-                    ))}
+                <div className="grid grid-cols-2 gap-3 pt-2 text-sm text-zinc-500">
+                    <div className="flex items-center gap-2">
+                        <IconUsers size={16} className="text-blue-600 stroke-[1.5]" />
+                        <span className="truncate">{training.targetAudience}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <IconClock size={16} className="text-teal-600 stroke-[1.5]" />
+                        <span>{training.isHalfDay ? 'Half Day' : 'Full Day'}</span>
+                    </div>
+                    <div className="col-span-2 flex items-center gap-2">
+                        <IconBook size={16} className="text-violet-600 stroke-[1.5]" />
+                        {/* This will match the trainingPartner badge in modal header */}
+                        <motion.span layoutId={`partner-${id}`} className="truncate">
+                            {training.trainingPartner}
+                        </motion.span>
+                    </div>
                 </div>
             </div>
         </motion.div>
     );
-}
+};
+
+export default TrainingCard;
