@@ -27,6 +27,8 @@ const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
                 "shadow-lg hover:shadow-xl hover:shadow-teal-500/10 hover:border-teal-500/50",
                 "transition-all duration-300"
             )}
+            layout
+            transition={{ ease: "easeInOut" }}
         >
             {/* Gradient Glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
@@ -52,19 +54,19 @@ const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
                 </div>
 
                 {/* Description - Fade out on expand usually, but we keep it static for card */}
-                <p className="text-zinc-600 text-sm line-clamp-2">
+                <motion.p layoutId={`description-${id}`} className="text-zinc-600 text-sm line-clamp-2">
                     {training.programObjective}
-                </p>
+                </motion.p>
 
                 <div className="grid grid-cols-2 gap-3 pt-2 text-sm text-zinc-500">
-                    <div className="flex items-center gap-2">
+                    <motion.div layoutId={`audience-${id}`} className="flex items-center gap-2">
                         <IconUsers size={16} className="text-blue-600 stroke-[1.5]" />
                         <span className="truncate">{training.targetAudience}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    </motion.div>
+                    <motion.div layoutId={`duration-${id}`} className="flex items-center gap-2">
                         <IconClock size={16} className="text-teal-600 stroke-[1.5]" />
                         <span>{training.isHalfDay ? 'Half Day' : 'Full Day'}</span>
-                    </div>
+                    </motion.div>
                     <div className="col-span-2 flex items-center gap-2">
                         <IconBook size={16} className="text-violet-600 stroke-[1.5]" />
                         {/* This will match the trainingPartner badge in modal header */}

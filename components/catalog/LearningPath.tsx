@@ -19,7 +19,7 @@ const LearningPath = ({ trainings, onSelectTraining }: LearningPathProps) => {
             {/* The "Deck" Container */}
             <div className="space-y-12 relative">
                 {/* Continuous Background Line */}
-                <div className="absolute left-[39px] md:left-[51px] top-8 bottom-8 w-1 bg-zinc-100 z-0 hidden md:block" />
+                <div className="absolute left-[42px] md:left-[30px] top-8 bottom-8 w-1 bg-zinc-100 z-0 hidden md:block" />
 
                 {trainings.map((training, index) => {
                     return (
@@ -54,8 +54,7 @@ const StickyCard = ({ training, index, total, onClick }: StickyCardProps) => {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5, delay: index * 0.05 }}
             className="sticky"

@@ -58,7 +58,7 @@ export default function CatalogView({ designations, allTrainings }: CatalogViewP
                             className="inline-block p-2 px-4 rounded-full bg-white border border-zinc-200 shadow-sm mb-6"
                         >
                             <span className="text-sm font-medium bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
-                                ✨ Enhanced Learning Pathways
+                                Enhanced Learning Pathways
                             </span>
                         </motion.div>
 

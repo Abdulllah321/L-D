@@ -40,6 +40,7 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
               layoutId={`card-${training._id}`}
               onClick={(e) => e.stopPropagation()}
               className="bg-white border border-zinc-100 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               {/* Header with Linked Elements */}
               <div className="h-32 bg-gradient-to-r from-teal-50 via-blue-50 to-violet-50 relative shrink-0 border-b border-zinc-100 p-8 flex items-end">
@@ -89,20 +90,20 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
               >
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
+                  <motion.div layoutId={`duration-${training._id}`} className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconClock size={16} className="text-teal-500" />
                       <span>Duration</span>
                     </div>
                     <span className="font-semibold text-zinc-700">{training.durationFormat}</span>
-                  </div>
-                  <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
+                  </motion.div>
+                  <motion.div layoutId={`audience-${training._id}`} className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconUsers size={16} className="text-blue-500" />
                       <span>Audience</span>
                     </div>
                     <span className="font-semibold text-zinc-700 line-clamp-1" title={training.targetAudience}>{training.targetAudience}</span>
-                  </div>
+                  </motion.div>
                   <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconCalendar size={16} className="text-violet-500" />
@@ -126,9 +127,9 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
                         <IconTarget className="text-teal-500" size={20} />
                         Objectives
                       </h3>
-                      <p className="text-zinc-600 leading-relaxed whitespace-pre-wrap">
+                      <motion.p layoutId={`description-${training._id}`} className="text-zinc-600 leading-relaxed whitespace-pre-wrap">
                         {training.programObjective}
-                      </p>
+                      </motion.p>
                     </section>
 
                     <section>

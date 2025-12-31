@@ -73,7 +73,7 @@ const Timeline = ({ designations, trainingsMap }: TimelineProps) => {
                                 <motion.div
                                     initial={{ opacity: 0, x: isEven ? 50 : -50 }}
                                     whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true, margin: "-100px" }}
+                                    viewport={{ once: true }}
                                     transition={{ duration: 0.5, delay: index * 0.1 }}
                                 >
                                     <div
