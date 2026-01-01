@@ -853,7 +853,7 @@ function DecorativeSVG() {
 
 export default function HeroSection() {
   const [hoveredPill, setHoveredPill] = useState<string | null>(null);
-const router = useRouter.();
+const router = useRouter();
 
   const handleExploreClick = () => {
         router.push('/catalog');
