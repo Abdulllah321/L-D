@@ -51,7 +51,7 @@ const Timeline = ({ designations, trainingsMap }: TimelineProps) => {
 
                     return (
                         <div key={designation.id} className={clsx(
-                            "relative flex flex-col md:flex-row items-center",
+                            "relative flex flex-col md:flex-row items-center w-full",
                             isEven ? "md:flex-row-reverse" : ""
                         )}>
 
@@ -67,8 +67,9 @@ const Timeline = ({ designations, trainingsMap }: TimelineProps) => {
 
                             {/* Content */}
                             <div className={clsx(
-                                "w-full md:w-1/2 pl-16 md:pl-0",
-                                isEven ? "md:pr-16 md:text-right" : "md:pl-16"
+                                "w-full md:w-1/2 ",
+                                isEven ? "md:text-right" : "",
+                                isEven ? "md:pl-[1rem]" : "md:pr-[1rem]"
                             )}>
                                 <motion.div
                                     initial={{ opacity: 0, x: isEven ? 50 : -50 }}
@@ -79,7 +80,7 @@ const Timeline = ({ designations, trainingsMap }: TimelineProps) => {
                                     <div
                                         onClick={() => handleSelect(designation.id)}
                                         className={clsx(
-                                            "cursor-pointer group inline-block p-6 rounded-2xl bg-white border border-zinc-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-teal-100 hover:bg-teal-50/30",
+                                            "cursor-pointer group inline-block p-6 rounded-2xl bg-white border border-zinc-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-teal-100 hover:bg-teal-50/30 w-full",
                                             isEven ? "items-end" : "items-start"
                                         )}
                                     >

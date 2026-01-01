@@ -108,50 +108,55 @@ function DesignationCard({
   );
 }
 
+import { useRouter } from "next/navigation";
+import { useCatalog } from "@/context/CatalogContext";
+
+// ... (imports)
+
+// ... (interfaces)
+
 export default function DesignationCatalog() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [designations, setDesignations] = useState<Designation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { designations, loading } = useCatalog();
+  const router = useRouter();
 
-  // Fetch designations from API
-  useEffect(() => {
-    const fetchDesignations = async () => {
-      try {
-        const response = await fetch("/api/designations");
-        if (response.ok) {
-          const data = await response.json();
-          // Map database designations to component format with icons
-          const mappedDesignations = (data.designations || []).map((d: any) => ({
-            ...d,
-            icon: iconMap[d.iconName] || Book, // Default to Book if icon not found
-          }));
-          setDesignations(mappedDesignations);
-        }
-      } catch (error) {
-        console.error("Error fetching designations:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Loading state handled by context, but we can show local spinner if needed or just use designations
+  const isLoading = loading;
 
-    fetchDesignations();
-  }, []);
+  // Icon mapping logic needs to be run on designations since they from context don't have 'icon' property mapped
+  const mappedDesignations = useMemo(() => {
+    return designations.map((d: any) => ({
+      ...d,
+      icon: iconMap[d.iconName] || Book
+    }));
+  }, [designations]);
 
-  // Filter designations based on search
+  // Filter
   const filteredDesignations = useMemo(() => {
-    if (!searchQuery.trim()) return designations;
+    if (!searchQuery.trim()) return mappedDesignations;
     const query = searchQuery.toLowerCase();
-    return designations.filter(
+    return mappedDesignations.filter(
       (d) =>
         d.id.toLowerCase().includes(query) ||
         d.title.toLowerCase().includes(query) ||
         d.summary.toLowerCase().includes(query)
     );
-  }, [searchQuery, designations]);
+  }, [searchQuery, mappedDesignations]);
+
+  // Filter designations based on search
+  const filteredDesignations = useMemo(() => {
+    if (!searchQuery.trim()) return mappedDesignations;
+    const query = searchQuery.toLowerCase();
+    return mappedDesignations.filter(
+      (d) =>
+        d.id.toLowerCase().includes(query) ||
+        d.title.toLowerCase().includes(query) ||
+        d.summary.toLowerCase().includes(query)
+    );
+  }, [searchQuery, mappedDesignations]);
 
   const handleCardClick = (id: string) => {
-    // TODO: Navigate to pathway view
-    console.log("Navigate to pathway for:", id);
+    router.push(`/catalog/${id}`);
   };
 
   return (

@@ -2,6 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Book, Rocket, ArrowRight } from "@solar-icons/react";
 
 // Track Card Component with Micro-interactions
@@ -13,6 +14,7 @@ function TrackCard({
   features,
   gradient,
   delay = 0,
+  onClick
 }: {
   icon: React.ComponentType<{ className?: string }>;
   badge: string;
@@ -21,6 +23,7 @@ function TrackCard({
   features: string[];
   gradient: string;
   delay?: number;
+  onClick?: () => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const mouseX = useMotionValue(0);
@@ -49,6 +52,7 @@ function TrackCard({
   return (
     <motion.div
       layout
+      onClick={onClick}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -200,6 +204,8 @@ function TrackCard({
 }
 
 export default function LearningTracksIntro() {
+  const router = useRouter();
+
   return (
     <section id="pathways" className="relative bg-white py-24 px-4 overflow-hidden">
       {/* Subtle Background Gradient */}
@@ -230,7 +236,7 @@ export default function LearningTracksIntro() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            This catalogue provides a role-wise learning roadmap for Branch Operations in 2025. 
+            This catalogue provides a role-wise learning roadmap for Branch Operations in 2025.
             Use the tabs above to open the learning track pages. Training titles that have supporting{" "}
             <span className="font-semibold text-gray-900"> "program sheets" </span>
             are clickable and open details on the same page.
@@ -253,6 +259,7 @@ export default function LearningTracksIntro() {
             ]}
             gradient="from-teal-500 to-blue-500"
             delay={0.1}
+            onClick={() => router.push('/catalog')}
           />
 
           {/* Hi-Po Learning Track */}
@@ -269,6 +276,7 @@ export default function LearningTracksIntro() {
             ]}
             gradient="from-indigo-500 to-purple-500"
             delay={0.2}
+            onClick={() => router.push('/catalog')}
           />
         </div>
       </div>

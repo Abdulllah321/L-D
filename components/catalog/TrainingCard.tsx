@@ -27,8 +27,7 @@ const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
                 "shadow-lg hover:shadow-xl hover:shadow-teal-500/10 hover:border-teal-500/50",
                 "transition-all duration-300"
             )}
-            layout
-            transition={{ ease: "easeInOut" }}
+            transition={{ ease: "easeInOut", duration: 0.3 }}
         >
             {/* Gradient Glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
@@ -37,42 +36,39 @@ const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
                 <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1 w-full">
                         {/* Partner Badge */}
-                        <motion.div layoutId={`badge-${id}`} className="inline-block">
+                        <div className="inline-block">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
                                 {training.isHalfDay ? 'Half Day' : training.durationFormat}
                             </span>
-                        </motion.div>
+                        </div>
 
                         {/* Title */}
-                        <motion.h3
-                            layoutId={`title-${id}`}
-                            className="text-xl font-bold text-zinc-900 group-hover:text-teal-600 transition-colors mt-1"
-                        >
+                        <h3 className="text-xl font-bold text-zinc-900 group-hover:text-teal-600 transition-colors mt-1">
                             {training.programTitle}
-                        </motion.h3>
+                        </h3>
                     </div>
                 </div>
 
                 {/* Description - Fade out on expand usually, but we keep it static for card */}
-                <motion.p layoutId={`description-${id}`} className="text-zinc-600 text-sm line-clamp-2">
+                <p className="text-zinc-600 text-sm line-clamp-2">
                     {training.programObjective}
-                </motion.p>
+                </p>
 
                 <div className="grid grid-cols-2 gap-3 pt-2 text-sm text-zinc-500">
-                    <motion.div layoutId={`audience-${id}`} className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                         <IconUsers size={16} className="text-blue-600 stroke-[1.5]" />
                         <span className="truncate">{training.targetAudience}</span>
-                    </motion.div>
-                    <motion.div layoutId={`duration-${id}`} className="flex items-center gap-2">
+                    </div>
+                    <div className="flex items-center gap-2">
                         <IconClock size={16} className="text-teal-600 stroke-[1.5]" />
                         <span>{training.isHalfDay ? 'Half Day' : 'Full Day'}</span>
-                    </motion.div>
+                    </div>
                     <div className="col-span-2 flex items-center gap-2">
                         <IconBook size={16} className="text-violet-600 stroke-[1.5]" />
                         {/* This will match the trainingPartner badge in modal header */}
-                        <motion.span layoutId={`partner-${id}`} className="truncate">
+                        <span className="truncate">
                             {training.trainingPartner}
-                        </motion.span>
+                        </span>
                     </div>
                 </div>
             </div>

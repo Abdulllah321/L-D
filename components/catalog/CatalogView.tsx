@@ -1,13 +1,12 @@
-'use client';
-
 import { IDesignation } from '@/models/Designation';
 import { ITraining } from '@/models/Training';
 import { useState, useMemo } from 'react';
 import TrainingModal from './TrainingModal';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import Timeline from './Timeline';
-import Footer from '@/app/components/landing/Footer'; // Updated Footer Import
+import Footer from '@/app/components/landing/Footer';
 import Header from '@/app/components/Header';
+import { IconSearch, IconSparkles } from '@tabler/icons-react';
 
 interface CatalogViewProps {
     designations: IDesignation[];
@@ -16,9 +15,20 @@ interface CatalogViewProps {
 
 export default function CatalogView({ designations, allTrainings }: CatalogViewProps) {
     const [selectedTraining, setSelectedTraining] = useState<ITraining | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Filter Helper
     const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Filter Designations based on search
+    const filteredDesignations = useMemo(() => {
+        if (!searchQuery.trim()) return designations;
+        const query = normalize(searchQuery);
+        return designations.filter(d =>
+            normalize(d.title).includes(query) ||
+            normalize(d.summary || '').includes(query)
+        );
+    }, [designations, searchQuery]);
 
     const designationTrainingsMap = useMemo(() => {
         const map = new Map<string, ITraining[]>();
@@ -49,14 +59,15 @@ export default function CatalogView({ designations, allTrainings }: CatalogViewP
             <main className="relative z-10">
 
                 {/* Hero Section */}
-                <section className="relative pt-32 pb-12 overflow-hidden text-center">
+                <section className="relative pt-32 pb-8 overflow-hidden text-center">
                     <div className="container mx-auto px-6">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.8 }}
-                            className="inline-block p-2 px-4 rounded-full bg-white border border-zinc-200 shadow-sm mb-6"
+                            className="inline-flex items-center gap-2 p-2 px-4 rounded-full bg-white border border-zinc-200 shadow-sm mb-6"
                         >
+                            <IconSparkles size={16} className="text-amber-500" />
                             <span className="text-sm font-medium bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
                                 Enhanced Learning Pathways
                             </span>
@@ -78,19 +89,54 @@ export default function CatalogView({ designations, allTrainings }: CatalogViewP
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2, duration: 0.8 }}
-                            className="max-w-2xl mx-auto text-lg text-zinc-600 leading-relaxed"
+                            className="max-w-2xl mx-auto text-lg text-zinc-600 leading-relaxed mb-10"
                         >
                             Navigate through our role-based learning catalog. Connect with the skills required to excel at every stage of your career.
                         </motion.p>
+
+                        {/* Search Input */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className="max-w-md mx-auto relative group"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-blue-500 rounded-2xl opacity-20 group-hover:opacity-30 blur transition-opacity" />
+                            <div className="relative bg-white rounded-2xl shadow-xl flex items-center p-2 border border-zinc-100">
+                                <IconSearch className="text-zinc-400 ml-3" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="Search for a designation..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full p-3 bg-transparent border-none outline-none text-zinc-800 placeholder:text-zinc-400 font-medium"
+                                />
+                            </div>
+                        </motion.div>
                     </div>
                 </section>
 
                 {/* Timeline Content */}
-                <section className="py-12">
-                    <Timeline
-                        designations={designations}
-                        trainingsMap={designationTrainingsMap}
-                    />
+                <section className="py-12 min-h-[500px]">
+                    <AnimatePresence mode='wait'>
+                        {filteredDesignations.length > 0 ? (
+                            <Timeline
+                                key="timeline"
+                                designations={filteredDesignations}
+                                trainingsMap={designationTrainingsMap}
+                            />
+                        ) : (
+                            <motion.div
+                                key="empty"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="text-center py-20"
+                            >
+                                <p className="text-zinc-500 text-lg">No designations found matching "{searchQuery}"</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </section>
             </main>
 

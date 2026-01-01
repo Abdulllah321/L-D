@@ -1,67 +1,84 @@
-import connectDB from '@/lib/mongodb';
+'use client';
+
 import DesignationDetailView from '@/components/catalog/DesignationDetailView';
-import Designation from '@/models/Designation';
-import Training from '@/models/Training';
-import { notFound } from 'next/navigation';
+import { useCatalog } from '@/context/CatalogContext';
+import { motion } from 'motion/react';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
-export async function generateStaticParams() {
-    await connectDB();
-    const designations = await Designation.find({}, { id: 1 }).lean();
-    return designations.map((d) => ({
-        designationId: d.id,
-    }));
-}
+export default function DesignationPage() {
+    const params = useParams();
+    const router = useRouter();
+    const { designationId } = params as { designationId: string };
 
-export const dynamic = 'force-static';
-export const revalidate = 3600; // Revalidate every hour
+    // Explicitly destructure from hook
+    const catalogData = useCatalog();
+    const designations = catalogData.designations;
+    const trainings = catalogData.trainings;
+    const assignments = catalogData.assignments;
+    const loading = catalogData.loading;
 
-interface PageProps {
-    params: Promise<{ designationId: string }>;
-}
+    // Fetch details for designation and navigation (Context)
+    const data = useMemo(() => {
+        if (loading || !designations || !designations.length) return null;
 
-export default async function DesignationPage({ params }: PageProps) {
-    await connectDB();
-    const { designationId } = await params;
+        const designation = designations.find(d => d.id === designationId);
+        if (!designation) return 'not-found';
 
-    const designation = await Designation.findOne({ id: designationId }).lean();
+        const currentIndex = designations.findIndex(d => d.id === designationId);
+        const prevDesignation = currentIndex > 0 ? designations[currentIndex - 1] : null;
+        const nextDesignation = currentIndex < designations.length - 1 ? designations[currentIndex + 1] : null;
 
-    if (!designation) {
-        notFound();
+        // Filter and Hydrate Assignments
+        const relevantAssignments = assignments.filter(a => a.designationId === designationId);
+
+        const getTrackTrainings = (trackType: 'normal' | 'hi-po') => {
+            return relevantAssignments
+                .filter(a => a.trackType === trackType)
+                // Sort by order if available
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .map(a => trainings.find(t => t._id === a.trainingId || t._id === (a.trainingId as any).toString()))
+                .filter(Boolean) as any[];
+        };
+
+        return {
+            designation,
+            normalTrack: getTrackTrainings('normal'),
+            hiPoTrack: getTrackTrainings('hi-po'),
+            navData: {
+                prev: prevDesignation ? { id: prevDesignation.id, title: prevDesignation.title } : null,
+                next: nextDesignation ? { id: nextDesignation.id, title: nextDesignation.title } : null
+            }
+        };
+    }, [designationId, designations, trainings, assignments, loading]);
+
+    // Handle Not Found
+    useEffect(() => {
+        if (!loading && data === 'not-found') {
+            router.push('/404');
+        }
+    }, [loading, data, router]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full"
+                />
+            </div>
+        );
     }
 
-    // Fetch all for Nav
-    const allDesignations = await Designation.find({}, { id: 1, title: 1, order: 1 }).sort({ order: 1 }).lean();
-    const currentIndex = allDesignations.findIndex(d => d.id === designationId);
-
-    // Previous and Next Logic
-    const prevDesignation = currentIndex > 0 ? allDesignations[currentIndex - 1] : null;
-    const nextDesignation = currentIndex < allDesignations.length - 1 ? allDesignations[currentIndex + 1] : null;
-
-    // Fetch all trainings to filter (or optimize this later to fetch strictly needed)
-    // For SSG, fetching all once per build is fine
-    const allTrainings = await Training.find({}).lean();
-
-    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const dTitle = normalize(designation.title);
-
-    const relatedTrainings = allTrainings.filter(t => {
-        const tAudience = normalize(t.targetAudience);
-        return tAudience.includes(dTitle) || dTitle.includes(tAudience) || tAudience.includes('all');
-    });
-
-    const serializedDesignation = JSON.parse(JSON.stringify(designation));
-    const serializedTrainings = JSON.parse(JSON.stringify(relatedTrainings));
-
-    const navData = {
-        prev: prevDesignation ? { id: prevDesignation.id, title: prevDesignation.title } : null,
-        next: nextDesignation ? { id: nextDesignation.id, title: nextDesignation.title } : null
-    };
+    if (data === 'not-found' || !data) return null;
 
     return (
         <DesignationDetailView
-            designation={serializedDesignation}
-            trainings={serializedTrainings}
-            navigation={navData}
+            designation={data.designation}
+            normalTrack={data.normalTrack}
+            hiPoTrack={data.hiPoTrack}
+            navigation={data.navData}
         />
     );
 }

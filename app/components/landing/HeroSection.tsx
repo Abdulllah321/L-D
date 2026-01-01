@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import LightRays from "./HeroBackground";
+import { useRouter } from "next/navigation";
 
 // Animated SVG Icon Components using pathLength
 function AnimatedLinkIcon({
@@ -852,7 +853,13 @@ function DecorativeSVG() {
 
 export default function HeroSection() {
   const [hoveredPill, setHoveredPill] = useState<string | null>(null);
+const router = useRouter.();
 
+  const handleExploreClick = () => {
+        router.push('/catalog');
+  };
+
+      
   return (
     <div
       id="hero"
@@ -903,8 +910,7 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row gap-4 mb-20">
           <button
             onClick={() => {
-              const element = document.getElementById("catalog");
-              if (element) element.scrollIntoView({ behavior: "smooth" });
+             router.push("/catalog")
             }}
             className="relative px-8 py-3.5 bg-black text-white rounded-lg font-medium hover:bg-gray-900 transition-all duration-300 text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:scale-95"
           >

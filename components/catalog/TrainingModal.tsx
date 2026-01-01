@@ -40,7 +40,7 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
               layoutId={`card-${training._id}`}
               onClick={(e) => e.stopPropagation()}
               className="bg-white border border-zinc-100 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative"
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35 }}
             >
               {/* Header with Linked Elements */}
               <div className="h-32 bg-gradient-to-r from-teal-50 via-blue-50 to-violet-50 relative shrink-0 border-b border-zinc-100 p-8 flex items-end">
@@ -53,30 +53,37 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
                 </button>
 
                 <div className="w-full">
-                  <div className="absolute top-6 left-8">
+                  <div className="absolute top-6 right-16">
                     {/* Badge maps to the Duration/Type badge on card */}
-                    <motion.div layoutId={`badge-${training._id}`} className="inline-block">
+                    <div className="inline-block">
                       <span className="text-xs font-medium bg-white/60 text-teal-700 border border-teal-100 px-2.5 py-1 rounded-full backdrop-blur-md mb-2 inline-block shadow-sm">
                         {training.isHalfDay ? 'Half Day' : training.durationFormat}
                       </span>
-                    </motion.div>
+                    </div>
                   </div>
 
                   {/* Title maps to Card Title */}
                   <motion.h2
-                    layoutId={`title-${training._id}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
                     className="text-3xl font-bold tracking-tight text-zinc-900 mt-2"
                   >
                     {training.programTitle}
                   </motion.h2>
 
                   {/* Partner Name maps to Card Partner */}
-                  <div className="flex items-center gap-2 mt-2 text-zinc-500 text-sm">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center gap-2 mt-2 text-zinc-500 text-sm"
+                  >
                     <IconBook size={16} className="text-violet-600" />
-                    <motion.span layoutId={`partner-${training._id}`}>
+                    <span>
                       {training.trainingPartner}
-                    </motion.span>
-                  </div>
+                    </span>
+                  </motion.div>
 
                 </div>
               </div>
@@ -85,25 +92,25 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.3 }}
                 className="overflow-y-auto p-8 space-y-8 custom-scrollbar bg-zinc-50/50"
               >
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <motion.div layoutId={`duration-${training._id}`} className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
+                  <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconClock size={16} className="text-teal-500" />
                       <span>Duration</span>
                     </div>
                     <span className="font-semibold text-zinc-700">{training.durationFormat}</span>
-                  </motion.div>
-                  <motion.div layoutId={`audience-${training._id}`} className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
+                  </div>
+                  <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconUsers size={16} className="text-blue-500" />
                       <span>Audience</span>
                     </div>
                     <span className="font-semibold text-zinc-700 line-clamp-1" title={training.targetAudience}>{training.targetAudience}</span>
-                  </motion.div>
+                  </div>
                   <div className="flex flex-col gap-1 p-3 rounded-2xl bg-white border border-zinc-100 shadow-sm">
                     <div className="flex items-center gap-2 text-zinc-400 text-sm font-medium">
                       <IconCalendar size={16} className="text-violet-500" />
@@ -127,9 +134,9 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
                         <IconTarget className="text-teal-500" size={20} />
                         Objectives
                       </h3>
-                      <motion.p layoutId={`description-${training._id}`} className="text-zinc-600 leading-relaxed whitespace-pre-wrap">
+                      <p className="text-zinc-600 leading-relaxed whitespace-pre-wrap">
                         {training.programObjective}
-                      </motion.p>
+                      </p>
                     </section>
 
                     <section>

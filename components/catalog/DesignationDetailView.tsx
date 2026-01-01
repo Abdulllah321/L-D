@@ -14,30 +14,24 @@ import { clsx } from 'clsx';
 
 interface DesignationDetailViewProps {
     designation: IDesignation;
-    trainings: ITraining[];
+    // trainings: ITraining[]; // Removed as we use specific tracks now
+    normalTrack: ITraining[];
+    hiPoTrack: ITraining[];
+    navigation?: {
+        prev: { id: string; title: string } | null;
+        next: { id: string; title: string } | null;
+    };
 }
 
-export default function DesignationDetailView({ designation, trainings }: DesignationDetailViewProps) {
+export default function DesignationDetailView({
+    designation,
+    normalTrack,
+    hiPoTrack,
+    navigation
+}: DesignationDetailViewProps) {
     const [selectedTraining, setSelectedTraining] = useState<ITraining | null>(null);
 
-    // Track Splitting Logic
-    const { normalTrack, hiPoTrack } = useMemo(() => {
-        const normal: ITraining[] = [];
-        const hiPo: ITraining[] = [];
-
-        trainings.forEach(t => {
-            const isHiPo = /Leadership|Strategic|Advanced|Management|Director|Executive|Head/i.test(t.programTitle) ||
-                /Leadership|Strategic/i.test(t.targetAudience);
-
-            if (isHiPo) {
-                hiPo.push(t);
-            } else {
-                normal.push(t);
-            }
-        });
-
-        return { normalTrack: normal, hiPoTrack: hiPo };
-    }, [trainings]);
+    // Track Splitting Logic REMOVED - Passed via props now
 
     return (
         <div className="min-h-screen bg-zinc-50 selection:bg-teal-500/30 text-zinc-900 font-sans">
@@ -53,11 +47,29 @@ export default function DesignationDetailView({ designation, trainings }: Design
             <main className="relative z-10 pt-32 pb-12">
                 <div className="container mx-auto px-6">
 
-                    {/* Breadcrumb / Back */}
-                    <Link href="/catalog" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-teal-600 transition-colors mb-8 group">
-                        <IconArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        Back to Catalog
-                    </Link>
+                    {/* Navigation Bar */}
+                    <div className="flex items-center justify-between mb-8">
+                        <Link href="/catalog" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-teal-600 transition-colors group">
+                            <IconArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                            Back to Catalog
+                        </Link>
+
+                        {navigation && (
+                            <div className="flex items-center gap-4 text-sm font-medium">
+                                {navigation.prev ? (
+                                    <Link href={`/catalog/${navigation.prev.id}`} className="text-zinc-500 hover:text-zinc-900 transition-colors">
+                                        &larr; {navigation.prev.title}
+                                    </Link>
+                                ) : <span className="text-zinc-300 cursor-not-allowed">&larr; Previous</span>}
+                                <span className="text-zinc-300">|</span>
+                                {navigation.next ? (
+                                    <Link href={`/catalog/${navigation.next.id}`} className="text-zinc-500 hover:text-zinc-900 transition-colors">
+                                        {navigation.next.title} &rarr;
+                                    </Link>
+                                ) : <span className="text-zinc-300 cursor-not-allowed">Next &rarr;</span>}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Header */}
                     <div className="max-w-4xl">
@@ -87,7 +99,7 @@ export default function DesignationDetailView({ designation, trainings }: Design
                     >
                         <div>
                             <span className="block text-sm font-semibold text-zinc-400 uppercase tracking-wider">Total Trainings</span>
-                            <span className="text-3xl font-bold text-zinc-900">{trainings.length}</span>
+                            <span className="text-3xl font-bold text-zinc-900">{normalTrack.length + hiPoTrack.length}</span>
                         </div>
                         <div className="h-auto w-px bg-zinc-200 hidden md:block" />
                         <div>
