@@ -19,10 +19,11 @@ export default function CatalogPage() {
         );
     }
 
-    return (
+    return (<>
         <CatalogView
             designations={designations}
             allTrainings={trainings}
         />
+        </>
     );
 }

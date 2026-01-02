@@ -11,6 +11,7 @@ import { motion } from 'motion/react';
 import { IconArrowLeft, IconBolt, IconBriefcase } from '@tabler/icons-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
+import Logo from '../ui/sparkles-logo';
 
 interface DesignationDetailViewProps {
     designation: IDesignation;
@@ -156,7 +157,7 @@ export default function DesignationDetailView({
 
                 </div>
             </main>
-
+                        <Logo/>
             <Footer />
 
             <TrainingModal

@@ -7,6 +7,7 @@ import Timeline from './Timeline';
 import Footer from '@/app/components/landing/Footer';
 import Header from '@/app/components/Header';
 import { IconSearch, IconSparkles } from '@tabler/icons-react';
+import Logo from '../ui/sparkles-logo';
 
 interface CatalogViewProps {
     designations: IDesignation[];
@@ -139,7 +140,7 @@ export default function CatalogView({ designations, allTrainings }: CatalogViewP
                     </AnimatePresence>
                 </section>
             </main>
-
+<Logo/>
             <Footer />
 
             <TrainingModal

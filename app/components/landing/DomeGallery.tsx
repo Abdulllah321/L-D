@@ -901,7 +901,7 @@ export default function DomeGallery({
               ref={scrimRef}
               className="scrim absolute inset-0 z-10 pointer-events-none opacity-0 transition-opacity duration-500"
               style={{
-                background: 'rgba(0, 0, 0, 0.4)',
+                // background: 'rgba(0, 0, 0, 0.4)',
                 backdropFilter: 'blur(3px)'
               }}
             />
