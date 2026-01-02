@@ -62,7 +62,7 @@ export default function Hero() {
                 >
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6 leading-[1.1] text-white">
                         Turn learning <br className="hidden md:block" />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 via-blue-600 to-purple-600 animate-gradient-x">
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-300 via-blue-400 to-purple-400 animate-gradient-x">
                             into growth.
                         </span>
                     </h1>
