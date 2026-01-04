@@ -56,10 +56,9 @@ export async function POST(request: NextRequest) {
         const designation = new Designation({
           id,
           title,
-          summary: item.summary || `Training pathway for ${title}`,
           iconName: item.iconName || 'Book',
-          coreTrainings: item.coreTrainings || 0,
-          refreshers: item.refreshers || 0,
+          order: item.order || 0,
+          subDesignations: item.subDesignations || [],
         });
 
         await designation.save();

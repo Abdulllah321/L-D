@@ -50,7 +50,6 @@ export default function DesignationRow({ designation, trainings, onSelectTrainin
                     </div>
                     <div>
                         <h2 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100 mb-2">{designation.title}</h2>
-                        <p className="text-zinc-500 dark:text-zinc-400 max-w-2xl text-lg leading-relaxed">{designation.summary}</p>
 
                         <div className="flex gap-4 mt-4 text-sm font-medium text-zinc-400">
                             <span>{trainings.length} Trainings Available</span>

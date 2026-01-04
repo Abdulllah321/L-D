@@ -1,9 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
-import TrainingAssignment from '@/models/TrainingAssignment';
-import { getAuthFromRequest } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthFromRequest } from "@/lib/auth";
+import connectDB from "@/lib/mongodb";
+import TrainingAssignment from "@/models/TrainingAssignment";
 
-// POST bulk reorder training assignments (admin only)
+/**
+ * Training Assignments Reorder API
+ * 
+ * POST /api/training-assignments/reorder
+ * 
+ * Bulk reorder training assignments (admin only)
+ * Used for drag-and-drop reordering of assignments
+ * 
+ * Request Body:
+ * {
+ *   items: Array<{ assignmentId: string, order: number }>
+ * }
+ * 
+ * Returns: { message: string, modifiedCount: number }
+ */
 export async function POST(request: NextRequest) {
   try {
     const auth = getAuthFromRequest(request);

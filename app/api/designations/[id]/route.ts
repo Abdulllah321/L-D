@@ -47,8 +47,9 @@ export async function PUT(
 
     // Update fields
     if (body.title) designation.title = body.title;
+    if (body.iconName) designation.iconName = body.iconName;
+    if (body.order !== undefined) designation.order = body.order;
     if (body.subDesignations) designation.subDesignations = body.subDesignations;
-    // Add other fields if necessary
 
     await designation.save();
 

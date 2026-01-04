@@ -1,10 +1,37 @@
+/**
+ * Training Assignments API
+ * 
+ * This API handles training assignments to designations with the following structure:
+ * - Track Types: 'normal' | 'hi-po'
+ * - Annual Types: null (Regular) | 'annual-regular' | 'annual-ecourse'
+ * 
+ * Assignment Types:
+ * 1. Individual Training (trainingId)
+ * 2. Learning Path (learningPathId)
+ * 3. Custom Training Name (customTrainingName) - for trainings not in database
+ * 
+ * Endpoints:
+ * - GET /api/training-assignments - Fetch assignments with optional filters
+ * - POST /api/training-assignments - Create new assignment (admin only)
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import TrainingAssignment from '@/models/TrainingAssignment';
 import Training from '@/models/Training';
 import { getAuthFromRequest } from '@/lib/auth';
 
-// GET assignments (optionally filtered by designationId and trackType)
+/**
+ * GET /api/training-assignments
+ * 
+ * Query Parameters:
+ * - designationId: Filter by designation ID
+ * - trackType: Filter by track type ('normal' | 'hi-po')
+ * - annualType: Filter by annual type ('annual-regular' | 'annual-ecourse' | 'null' for regular)
+ * - subDesignationId: Filter by sub-designation ID
+ * 
+ * Returns: { trainings: TrainingAssignment[] }
+ */
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
@@ -28,13 +55,14 @@ export async function GET(request: NextRequest) {
     if (trackType) {
       query.trackType = trackType;
     }
-    if (annualType !== null) {
+    if (annualType !== null && annualType !== undefined) {
       if (annualType === 'null' || annualType === '') {
+        // Query for regular tracks (annualType is null or doesn't exist)
         query.$or = [
           { annualType: { $exists: false } },
           { annualType: null }
         ];
-      } else {
+      } else if (annualType === 'annual-regular' || annualType === 'annual-ecourse') {
         query.annualType = annualType;
       }
     }
@@ -124,7 +152,27 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST create new assignment (admin only)
+/**
+ * POST /api/training-assignments
+ * 
+ * Create a new training assignment (admin only)
+ * 
+ * Request Body:
+ * {
+ *   designationId: string (required)
+ *   trackType: 'normal' | 'hi-po' (required)
+ *   annualType?: 'annual-regular' | 'annual-ecourse' | null (optional, defaults to null)
+ *   subDesignationId?: string (optional)
+ *   trainingId?: string (optional - for individual training)
+ *   learningPathId?: string (optional - for learning path)
+ *   customTrainingName?: string (optional - for custom training name)
+ *   order?: number (optional - auto-calculated if not provided)
+ * }
+ * 
+ * Note: At least one of trainingId, learningPathId, or customTrainingName must be provided
+ * 
+ * Returns: { message: string, assignment: TrainingAssignment }
+ */
 export async function POST(request: NextRequest) {
   try {
     const auth = getAuthFromRequest(request);
@@ -160,6 +208,30 @@ export async function POST(request: NextRequest) {
     if (annualType !== null && annualType !== undefined && annualType !== 'annual-regular' && annualType !== 'annual-ecourse') {
       return NextResponse.json(
         { error: 'annualType must be either "annual-regular", "annual-ecourse", or null' },
+        { status: 400 }
+      );
+    }
+
+    // Validation: annual-ecourse ONLY accepts Learning Paths (not trainings)
+    if (annualType === 'annual-ecourse') {
+      if (trainingId || customTrainingName) {
+        return NextResponse.json(
+          { error: 'E-Course Learning Track only accepts Learning Paths, not individual trainings' },
+          { status: 400 }
+        );
+      }
+      if (!learningPathId) {
+        return NextResponse.json(
+          { error: 'Learning Path ID is required for E-Course Learning Track' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validation: Regular and Annual-Regular tracks only accept Trainings (not Learning Paths)
+    if (annualType !== 'annual-ecourse' && learningPathId) {
+      return NextResponse.json(
+        { error: 'Learning Paths can only be assigned to E-Course Learning Track. Use Regular or Annual-Regular tracks for individual trainings.' },
         { status: 400 }
       );
     }

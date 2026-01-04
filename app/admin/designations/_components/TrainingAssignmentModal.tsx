@@ -43,6 +43,7 @@ interface TrainingAssignmentModalProps {
     handleRemoveTraining: (id: string) => void;
     setShowSearchModal: (show: boolean) => void;
     handleAddCustomTraining: (customTrainingName: string) => void;
+    setAssignMode?: (mode: 'training' | 'learning-path') => void;
 }
 
 export function TrainingAssignmentModal({
@@ -61,6 +62,7 @@ export function TrainingAssignmentModal({
     handleRemoveTraining,
     setShowSearchModal,
     handleAddCustomTraining,
+    setAssignMode,
 }: TrainingAssignmentModalProps) {
     const [customTrainingName, setCustomTrainingName] = useState("");
     const [isAddingCustom, setIsAddingCustom] = useState(false);
@@ -183,9 +185,9 @@ export function TrainingAssignmentModal({
                                     {/* Annual Type Selection Tabs (Sub-tabs under selected track) */}
                                     <div className="flex gap-2 mt-4 overflow-x-auto">
                                         {[
-                                            { id: null, label: 'Regular', color: 'gray' },
-                                            { id: 'annual-regular', label: 'Annual Regular', color: 'blue', icon: Book },
-                                            { id: 'annual-ecourse', label: 'Annual E-Course', color: 'indigo', icon: Sparkles },
+                                            { id: null, label: 'Regular Learning Track', color: 'gray', description: 'Ordered list of trainings' },
+                                            { id: 'annual-regular', label: 'Annual/Bi-Annual Regular / Refresher', color: 'blue', icon: Book, description: 'Annual trainings' },
+                                            { id: 'annual-ecourse', label: 'E-Course Learning Track', color: 'indigo', icon: Sparkles, description: 'Learning Paths only' },
                                         ].map((annual) => (
                                             <button
                                                 key={annual.id || 'regular'}
@@ -195,9 +197,14 @@ export function TrainingAssignmentModal({
                                                     : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border-2 border-transparent'
                                                     }`}
                                             >
-                                                <div className="flex items-center gap-2">
-                                                    {annual.icon && <annual.icon className="w-3.5 h-3.5" />}
-                                                    {annual.label}
+                                                <div className="flex flex-col items-start gap-0.5">
+                                                    <div className="flex items-center gap-2">
+                                                        {annual.icon && <annual.icon className="w-3.5 h-3.5" />}
+                                                        <span className="font-medium">{annual.label}</span>
+                                                    </div>
+                                                    {annual.description && (
+                                                        <span className="text-xs text-gray-500">{annual.description}</span>
+                                                    )}
                                                 </div>
                                             </button>
                                         ))}
@@ -206,27 +213,47 @@ export function TrainingAssignmentModal({
 
                                 {/* Add Training Section */}
                                 <div className="mb-6 space-y-3">
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setShowSearchModal(true);
-                                            }}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-all shadow-sm hover:shadow-md active:scale-95"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            Add Training
-                                        </button>
-                                        <button
-                                            onClick={() => setIsAddingCustom(!isAddingCustom)}
-                                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all border border-gray-200"
-                                        >
-                                            <FileText className="w-4 h-4" />
-                                            Add Custom Training
-                                        </button>
+                                    <div className="flex gap-3 flex-wrap">
+                                        {selectedAnnualType === 'annual-ecourse' ? (
+                                            <button
+                                                onClick={() => {
+                                                    if (setAssignMode) {
+                                                        setAssignMode('learning-path');
+                                                    }
+                                                    setShowSearchModal(true);
+                                                }}
+                                                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm hover:shadow-md active:scale-95"
+                                            >
+                                                <GraduationCap className="w-4 h-4" />
+                                                Add Learning Path
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => {
+                                                        if (setAssignMode) {
+                                                            setAssignMode('training');
+                                                        }
+                                                        setShowSearchModal(true);
+                                                    }}
+                                                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-all shadow-sm hover:shadow-md active:scale-95"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                    Add Training
+                                                </button>
+                                                <button
+                                                    onClick={() => setIsAddingCustom(!isAddingCustom)}
+                                                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all border border-gray-200"
+                                                >
+                                                    <FileText className="w-4 h-4" />
+                                                    Add Custom Training
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                     
-                                    {/* Custom Training Name Input */}
-                                    {isAddingCustom && (
+                                    {/* Custom Training Name Input - Only show for non-ecourse tracks */}
+                                    {selectedAnnualType !== 'annual-ecourse' && isAddingCustom && (
                                         <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: "auto" }}
@@ -333,6 +360,9 @@ export function TrainingAssignmentModal({
                                         </p>
                                         <button
                                             onClick={() => {
+                                                if (setAssignMode) {
+                                                    setAssignMode(selectedAnnualType === 'annual-ecourse' ? 'learning-path' : 'training');
+                                                }
                                                 setShowSearchModal(true);
                                             }}
                                             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-all"

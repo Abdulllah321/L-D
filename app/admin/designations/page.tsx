@@ -267,10 +267,7 @@ export default function DesignationsPage() {
           body: JSON.stringify({
             id,
             title,
-            summary: `Training pathway for ${name}`,
             iconName: "Book",
-            coreTrainings: 0,
-            refreshers: 0,
           }),
         });
 
@@ -868,6 +865,7 @@ export default function DesignationsPage() {
         handleRemoveTraining={handleRemoveTraining}
         setShowSearchModal={setShowSearchModal}
         handleAddCustomTraining={handleAddCustomTraining}
+        setAssignMode={setAssignMode}
       />
 
       <SearchTrainingModal
@@ -875,6 +873,7 @@ export default function DesignationsPage() {
         setShowSearchModal={setShowSearchModal}
         selectedDesignation={selectedDesignation}
         selectedTrack={selectedTrack}
+        selectedAnnualType={selectedAnnualType}
         assignMode={assignMode}
         setAssignMode={setAssignMode}
         searchTrainingQuery={searchTrainingQuery}

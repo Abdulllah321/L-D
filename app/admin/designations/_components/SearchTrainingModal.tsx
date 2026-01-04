@@ -11,6 +11,7 @@ interface SearchTrainingModalProps {
     setShowSearchModal: (show: boolean) => void;
     selectedDesignation: Designation | null;
     selectedTrack: TrackType;
+    selectedAnnualType: 'annual-regular' | 'annual-ecourse' | null;
     assignMode: 'training' | 'learning-path';
     setAssignMode: (mode: 'training' | 'learning-path') => void;
     searchTrainingQuery: string;
@@ -25,6 +26,7 @@ export function SearchTrainingModal({
     setShowSearchModal,
     selectedDesignation,
     selectedTrack,
+    selectedAnnualType,
     assignMode,
     setAssignMode,
     searchTrainingQuery,
@@ -43,12 +45,12 @@ export function SearchTrainingModal({
     // Force learning-path mode ONLY for annual-ecourse track
     // Force training mode for all other tracks
     useEffect(() => {
-        if (selectedTrack === 'annual-ecourse' && assignMode === 'training') {
+        if (selectedAnnualType === 'annual-ecourse' && assignMode === 'training') {
             setAssignMode('learning-path');
-        } else if (selectedTrack !== 'annual-ecourse' && assignMode === 'learning-path') {
+        } else if (selectedAnnualType !== 'annual-ecourse' && assignMode === 'learning-path') {
             setAssignMode('training');
         }
-    }, [selectedTrack, assignMode, setAssignMode]);
+    }, [selectedAnnualType, assignMode, setAssignMode]);
 
     const toggleSelection = (id: string) => {
         const newSelected = new Set(selectedIds);

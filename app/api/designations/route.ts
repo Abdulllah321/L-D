@@ -43,11 +43,11 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
-    const { id, title, summary, iconName, coreTrainings, refreshers, order, subDesignations } = data;
+    const { id, title, iconName, order, subDesignations } = data;
 
-    if (!id || !title || !summary || !iconName || coreTrainings === undefined || refreshers === undefined) {
+    if (!id || !title || !iconName) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: 'id, title, and iconName are required' },
         { status: 400 }
       );
     }
@@ -71,10 +71,7 @@ export async function POST(request: NextRequest) {
     const designation = new Designation({
       id: id.toUpperCase(),
       title,
-      summary,
       iconName,
-      coreTrainings: parseInt(coreTrainings),
-      refreshers: parseInt(refreshers),
       order: finalOrder,
       subDesignations: subDesignations || [],
     });

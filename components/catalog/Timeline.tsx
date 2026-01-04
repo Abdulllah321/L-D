@@ -87,7 +87,6 @@ const Timeline = ({ designations, trainingsMap }: TimelineProps) => {
                                         <h2 className="text-3xl font-bold text-zinc-900 group-hover:text-teal-600 transition-colors duration-300">
                                             {designation.title}
                                         </h2>
-                                        <p className="mt-2 text-zinc-500 text-sm font-medium">{designation.summary}</p>
 
                                         <div className={clsx(
                                             "mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-100 text-zinc-600 text-sm font-semibold transition-all group-hover:bg-teal-500 group-hover:text-white",

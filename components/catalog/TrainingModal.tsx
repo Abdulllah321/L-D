@@ -15,16 +15,17 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Prevent body scroll when modal is open
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
   }, [isOpen]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && training && (
         <>
           {/* Backdrop with Fade */}
@@ -33,11 +34,11 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
           >
             {/* Shared Layout Container */}
             <motion.div
-              layoutId={`card-${training._id}`}
+              layoutId={`training-card-${training._id}`}
               onClick={(e) => e.stopPropagation()}
               className="bg-white border border-zinc-100 w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col relative"
               transition={{ type: "spring", stiffness: 350, damping: 35 }}
