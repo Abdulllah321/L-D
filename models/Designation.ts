@@ -10,7 +10,16 @@ export interface IDesignation extends Document {
   order: number;
   createdAt: Date;
   updatedAt: Date;
+  subDesignations?: {
+    id: string;
+    title: string;
+  }[];
 }
+
+const SubDesignationSchema = new Schema({
+  id: { type: String, required: true, trim: true, uppercase: true },
+  title: { type: String, required: true, trim: true }
+}, { _id: false });
 
 const DesignationSchema = new Schema<IDesignation>(
   {
@@ -50,6 +59,10 @@ const DesignationSchema = new Schema<IDesignation>(
       type: Number,
       required: false,
       default: 0,
+    },
+    subDesignations: {
+      type: [SubDesignationSchema],
+      default: [],
     },
   },
   {

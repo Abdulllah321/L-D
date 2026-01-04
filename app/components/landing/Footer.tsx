@@ -2,15 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Book, Rocket, User, Mail, Phone, MapPin } from 'lucide-react';
-
+import Link from 'next/link';
 export default function FooterGlow() {
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <footer className="relative z-10 mt-8 w-full overflow-hidden pt-0 pb-8">
       <style jsx global>{`
@@ -61,14 +54,14 @@ export default function FooterGlow() {
       </div>
       <div className="glass relative mx-auto flex max-w-6xl flex-col items-center gap-8 rounded-2xl px-6 py-10 md:flex-row md:items-start md:justify-between md:gap-12">
         <div className="flex flex-col items-center md:items-start">
-          <a href="#hero" onClick={(e) => { e.preventDefault(); scrollToSection('hero'); }} className="mb-4 flex items-center gap-2">
+          <Link href="/" className="mb-4 flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-blue-600 text-2xl font-extrabold text-white shadow-md">
               <Book className="h-5 w-5" />
             </span>
             <span className="bg-gradient-to-br from-teal-600 via-blue-600 to-indigo-700 bg-clip-text text-xl font-semibold tracking-tight text-transparent">
               Learning Portal
             </span>
-          </a>
+          </Link>
           <p className="text-gray-700 mb-6 max-w-xs text-center text-sm md:text-left">
             Empowering branch operations professionals with structured learning pathways,
             role-specific training, and continuous development opportunities.
@@ -95,40 +88,36 @@ export default function FooterGlow() {
             </div>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#hero"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('hero'); }}
+                <Link
+                  href="/"
                   className="text-gray-600 hover:text-teal-600 transition-colors"
                 >
                   Home
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#catalog"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('catalog'); }}
+                <Link
+                  href="/catalog"
                   className="text-gray-600 hover:text-teal-600 transition-colors"
                 >
                   Designation Catalog
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#pathways"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('pathways'); }}
+                <Link
+                  href="/#pathways"
                   className="text-gray-600 hover:text-teal-600 transition-colors"
                 >
                   Learning Tracks
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#resources"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('resources'); }}
+                <Link
+                  href="/catalog"
                   className="text-gray-600 hover:text-teal-600 transition-colors"
                 >
                   Resources
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -138,31 +127,28 @@ export default function FooterGlow() {
             </div>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#pathways"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('pathways'); }}
+                <Link
+                  href="/catalog"
                   className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   Regular Track
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#pathways"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('pathways'); }}
+                <Link
+                  href="/catalog"
                   className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   Hi-Po Track
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#catalog"
-                  onClick={(e) => { e.preventDefault(); scrollToSection('catalog'); }}
+                <Link
+                  href="/catalog"
                   className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
                   All Designations
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -187,9 +173,9 @@ export default function FooterGlow() {
                 </a>
               </li>
               <li>
-                <a href="/admin" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                <Link href="/admin" className="text-gray-600 hover:text-indigo-600 transition-colors">
                   Admin Portal
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

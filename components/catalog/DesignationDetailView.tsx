@@ -2,22 +2,47 @@
 
 import { IDesignation } from '@/models/Designation';
 import { ITraining } from '@/models/Training';
+import { ILearningPath } from '@/models/LearningPath';
 import { useState, useMemo } from 'react';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/landing/Footer';
-import LearningPath from './LearningPath';
+import LearningPathView from './LearningPath'; // Renamed import to avoid confusion with model
 import TrainingModal from './TrainingModal';
-import { motion } from 'motion/react';
-import { IconArrowLeft, IconBolt, IconBriefcase } from '@tabler/icons-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { IconArrowLeft, IconBolt, IconBriefcase, IconCalendar, IconDeviceLaptop, IconSchool } from '@tabler/icons-react';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import Logo from '../ui/sparkles-logo';
 
+// Types for the new structure
+export type CatalogItem =
+    | { type: 'training'; data: ITraining }
+    | { type: 'learning-path'; data: ILearningPath; trainings: ITraining[] };
+
+export interface TrackContent {
+    items: CatalogItem[];
+}
+
+export interface SubDesignationContent {
+    id: string; // 'main' for default
+    title: string;
+    tracks: {
+        normal: {
+            regular: TrackContent;
+            annualRegular: TrackContent;
+            annualEcourse: TrackContent;
+        };
+        hiPo: {
+            regular: TrackContent;
+            annualRegular: TrackContent;
+            annualEcourse: TrackContent;
+        };
+    };
+}
+
 interface DesignationDetailViewProps {
     designation: IDesignation;
-    // trainings: ITraining[]; // Removed as we use specific tracks now
-    normalTrack: ITraining[];
-    hiPoTrack: ITraining[];
+    subDesignationsContent: SubDesignationContent[];
     navigation?: {
         prev: { id: string; title: string } | null;
         next: { id: string; title: string } | null;
@@ -26,19 +51,64 @@ interface DesignationDetailViewProps {
 
 export default function DesignationDetailView({
     designation,
-    normalTrack,
-    hiPoTrack,
+    subDesignationsContent,
     navigation
 }: DesignationDetailViewProps) {
     const [selectedTraining, setSelectedTraining] = useState<ITraining | null>(null);
+    const [activeSubDesignationId, setActiveSubDesignationId] = useState<string>(
+        subDesignationsContent.length > 0 ? subDesignationsContent[0].id : 'main'
+    );
 
-    // Track Splitting Logic REMOVED - Passed via props now
+    const activeContent = useMemo(() =>
+        subDesignationsContent.find(c => c.id === activeSubDesignationId) || subDesignationsContent[0],
+        [subDesignationsContent, activeSubDesignationId]
+    );
+
+    // Helpers to render items (Trainings or Learning Paths)
+    const renderTrackItems = (items: CatalogItem[]) => {
+        return (
+            <div className="space-y-12">
+                {items.map((item, index) => {
+                    if (item.type === 'training') {
+                        // Treat individual trainings as a "General" path or similar
+                        return (
+                            <LearningPathView
+                                key={item.data._id as string || index}
+                                title="Individual Modules"
+                                trainings={[item.data]}
+                                onSelectTraining={setSelectedTraining}
+                            />
+                        );
+                    } else {
+                        // It's a Learning Path
+                        // Construct the title: Designation Code/Initials + Path Title
+                        const getInitials = (str: string) => str.split(' ').map(n => n[0]).join('').toUpperCase();
+                        const prefix = designation.title ? getInitials(designation.title) : 'LP';
+                        // User requested format: "SA Islamic Skill Deck" where SA is designation code
+                        // We can try to use ID if it's short, or initials of title
+                        const titleCode = designation.id.length <= 4 ? designation.id : prefix;
+                        const title = `${titleCode} ${item.data.title}`;
+
+                        return (
+                            <LearningPathView
+                                key={item.data._id as string || index}
+                                title={title}
+                                frequency={item.data.frequency}
+                                trainings={item.trainings}
+                                onSelectTraining={setSelectedTraining}
+                            />
+                        );
+                    }
+                })}
+            </div>
+        );
+    };
 
     return (
         <div className="min-h-screen bg-zinc-50 selection:bg-teal-500/30 text-zinc-900 font-sans">
             <Header />
 
-            {/* Background Patterns - Light Mode */}
+            {/* Background Patterns */}
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-0 right-0 w-[60%] h-[600px] bg-gradient-to-b from-blue-50/50 via-teal-50/20 to-transparent" />
                 <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-violet-100/30 rounded-full blur-[100px]" />
@@ -91,73 +161,142 @@ export default function DesignationDetailView({
                         </motion.p>
                     </div>
 
-                    {/* Stats / Info Bar */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="mt-12 flex flex-wrap gap-6 border-y border-zinc-200 py-8"
-                    >
-                        <div>
-                            <span className="block text-sm font-semibold text-zinc-400 uppercase tracking-wider">Total Trainings</span>
-                            <span className="text-3xl font-bold text-zinc-900">{normalTrack.length + hiPoTrack.length}</span>
+                    {/* Sub-Designation Tabs */}
+                    {subDesignationsContent.length > 1 && (
+                        <div className="mt-12 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {subDesignationsContent.map((sub) => (
+                                <button
+                                    key={sub.id}
+                                    onClick={() => setActiveSubDesignationId(sub.id)}
+                                    className={clsx(
+                                        "px-6 py-3 rounded-full text-sm font-semibold whitespace-nowrap transition-all",
+                                        activeSubDesignationId === sub.id
+                                            ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/10"
+                                            : "bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200"
+                                    )}
+                                >
+                                    {sub.title}
+                                </button>
+                            ))}
                         </div>
-                        <div className="h-auto w-px bg-zinc-200 hidden md:block" />
-                        <div>
-                            <span className="block text-sm font-semibold text-zinc-400 uppercase tracking-wider">Standard</span>
-                            <span className="text-3xl font-bold text-blue-600">{normalTrack.length}</span>
-                        </div>
-                        {hiPoTrack.length > 0 && (
-                            <>
-                                <div className="h-auto w-px bg-zinc-200 hidden md:block" />
-                                <div>
-                                    <span className="block text-sm font-semibold text-zinc-400 uppercase tracking-wider">Hi-Po</span>
-                                    <span className="text-3xl font-bold text-amber-500">{hiPoTrack.length}</span>
-                                </div>
-                            </>
-                        )}
-                    </motion.div>
+                    )}
 
-                    {/* Learning Path Sections */}
-                    <div className="space-y-20 mt-16">
+                    {/* Tracks Content */}
+                    <AnimatePresence mode='wait'>
+                        <motion.div
+                            key={activeSubDesignationId}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-20 mt-12"
+                        >
+                            {/* Normal Track */}
+                            {(activeContent?.tracks.normal.regular.items.length > 0 || 
+                              activeContent?.tracks.normal.annualRegular.items.length > 0 || 
+                              activeContent?.tracks.normal.annualEcourse.items.length > 0) && (
+                                <section>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600">
+                                            <IconBriefcase size={28} />
+                                        </div>
+                                        <h2 className="text-3xl font-bold text-zinc-900">Normal Track</h2>
+                                    </div>
+                                    
+                                    {/* Regular */}
+                                    {activeContent.tracks.normal.regular.items.length > 0 && (
+                                        <div className="mb-12">
+                                            <h3 className="text-xl font-semibold text-zinc-700 mb-6">Regular</h3>
+                                            {renderTrackItems(activeContent.tracks.normal.regular.items)}
+                                        </div>
+                                    )}
+                                    
+                                    {/* Annual Regular */}
+                                    {activeContent.tracks.normal.annualRegular.items.length > 0 && (
+                                        <div className="mb-12">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-2 rounded-lg bg-green-100 text-green-600">
+                                                    <IconCalendar size={20} />
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-zinc-700">Annual Regular</h3>
+                                            </div>
+                                            {renderTrackItems(activeContent.tracks.normal.annualRegular.items)}
+                                        </div>
+                                    )}
+                                    
+                                    {/* Annual E-Course */}
+                                    {activeContent.tracks.normal.annualEcourse.items.length > 0 && (
+                                        <div className="mb-12">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
+                                                    <IconDeviceLaptop size={20} />
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-zinc-700">Annual E-Course</h3>
+                                            </div>
+                                            {renderTrackItems(activeContent.tracks.normal.annualEcourse.items)}
+                                        </div>
+                                    )}
+                                </section>
+                            )}
 
-                        {/* Standard Track */}
-                        {normalTrack.length > 0 && (
-                            <section>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600">
-                                        <IconBriefcase size={28} />
+                            {/* Hi-Po Track */}
+                            {(activeContent?.tracks.hiPo.regular.items.length > 0 || 
+                              activeContent?.tracks.hiPo.annualRegular.items.length > 0 || 
+                              activeContent?.tracks.hiPo.annualEcourse.items.length > 0) && (
+                                <section>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600">
+                                            <IconBolt size={28} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-3xl font-bold text-zinc-900">High Potential (Hi-Po) Track</h2>
+                                            <p className="text-zinc-500 text-sm mt-1">Advanced development for future leaders.</p>
+                                        </div>
                                     </div>
-                                    <h2 className="text-3xl font-bold text-zinc-900">Standard Learning Track</h2>
-                                </div>
-                                <LearningPath trainings={normalTrack} onSelectTraining={setSelectedTraining} />
-                            </section>
-                        )}
-
-                        {/* Hi-Po Track */}
-                        {hiPoTrack.length > 0 && (
-                            <section>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="p-2.5 rounded-xl bg-amber-100 text-amber-600">
-                                        <IconBolt size={28} />
+                                    <div className="p-1 rounded-3xl bg-gradient-to-br from-amber-200 via-orange-100 to-transparent">
+                                        <div className="bg-amber-50/50 rounded-[1.4rem] p-6 md:p-8">
+                                            {/* Regular */}
+                                            {activeContent.tracks.hiPo.regular.items.length > 0 && (
+                                                <div className="mb-12">
+                                                    <h3 className="text-xl font-semibold text-zinc-700 mb-6">Regular</h3>
+                                                    {renderTrackItems(activeContent.tracks.hiPo.regular.items)}
+                                                </div>
+                                            )}
+                                            
+                                            {/* Annual Regular */}
+                                            {activeContent.tracks.hiPo.annualRegular.items.length > 0 && (
+                                                <div className="mb-12">
+                                                    <div className="flex items-center gap-3 mb-6">
+                                                        <div className="p-2 rounded-lg bg-green-100 text-green-600">
+                                                            <IconCalendar size={20} />
+                                                        </div>
+                                                        <h3 className="text-xl font-semibold text-zinc-700">Annual Regular</h3>
+                                                    </div>
+                                                    {renderTrackItems(activeContent.tracks.hiPo.annualRegular.items)}
+                                                </div>
+                                            )}
+                                            
+                                            {/* Annual E-Course */}
+                                            {activeContent.tracks.hiPo.annualEcourse.items.length > 0 && (
+                                                <div className="mb-12">
+                                                    <div className="flex items-center gap-3 mb-6">
+                                                        <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
+                                                            <IconDeviceLaptop size={20} />
+                                                        </div>
+                                                        <h3 className="text-xl font-semibold text-zinc-700">Annual E-Course</h3>
+                                                    </div>
+                                                    {renderTrackItems(activeContent.tracks.hiPo.annualEcourse.items)}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-3xl font-bold text-zinc-900">High Potential (Hi-Po) Track</h2>
-                                        <p className="text-zinc-500 text-lg">Advanced development for future leaders.</p>
-                                    </div>
-                                </div>
-                                <div className="p-1 rounded-3xl bg-gradient-to-br from-amber-200 via-orange-100 to-transparent">
-                                    <div className="bg-amber-50/50 rounded-[1.4rem] p-4 md:p-8">
-                                        <LearningPath trainings={hiPoTrack} onSelectTraining={setSelectedTraining} />
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-                    </div>
+                                </section>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
 
                 </div>
             </main>
-                        <Logo/>
+            <Logo />
             <Footer />
 
             <TrainingModal

@@ -3,12 +3,14 @@
 import { IDesignation } from '@/models/Designation';
 import { ITraining } from '@/models/Training';
 import { ITrainingAssignment } from '@/models/TrainingAssignment';
+import { ILearningPath } from '@/models/LearningPath';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface CatalogData {
     designations: IDesignation[];
     trainings: ITraining[];
     assignments: ITrainingAssignment[];
+    learningPaths: ILearningPath[];
     loading: boolean;
     error: string | null;
 }
@@ -16,10 +18,11 @@ interface CatalogData {
 const CatalogContext = createContext<CatalogData | undefined>(undefined);
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
-    const [data, setData] = useState<{ designations: IDesignation[]; trainings: ITraining[]; assignments: ITrainingAssignment[] }>({
+    const [data, setData] = useState<{ designations: IDesignation[]; trainings: ITraining[]; assignments: ITrainingAssignment[]; learningPaths: ILearningPath[] }>({
         designations: [],
         trainings: [],
-        assignments: []
+        assignments: [],
+        learningPaths: []
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -35,7 +38,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
                 setData({
                     designations: result.designations,
                     trainings: result.trainings,
-                    assignments: result.assignments
+                    assignments: result.assignments,
+                    learningPaths: result.learningPaths || []
                 });
             } catch (err) {
                 console.error(err);

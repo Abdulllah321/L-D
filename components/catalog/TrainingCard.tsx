@@ -30,7 +30,7 @@ const TrainingCard = ({ training, onClick, layoutId }: TrainingCardProps) => {
             transition={{ ease: "easeInOut", duration: 0.3 }}
         >
             {/* Gradient Glow */}
-            <div className="absolute -inset-1 bg-linear-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
 
             <div className="relative p-6 space-y-4">
                 <div className="flex justify-between items-start gap-4">

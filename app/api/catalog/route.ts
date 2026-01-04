@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Designation from '@/models/Designation';
 import Training from '@/models/Training';
 import TrainingAssignment from '@/models/TrainingAssignment';
+import LearningPath from '@/models/LearningPath';
 
 export async function GET() {
     try {
@@ -17,10 +18,14 @@ export async function GET() {
         // Fetch all training assignments
         const assignments = await TrainingAssignment.find({}).sort({ order: 1 }).lean();
 
+        // Fetch all learning paths
+        const learningPaths = await LearningPath.find({}).lean();
+
         return NextResponse.json({
             designations,
             trainings,
-            assignments
+            assignments,
+            learningPaths
         });
     } catch (error) {
         console.error("Error fetching catalog data:", error);

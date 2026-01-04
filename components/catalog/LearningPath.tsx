@@ -1,91 +1,123 @@
 'use client';
 
 import { ITraining } from '@/models/Training';
-import { motion, useScroll, useTransform } from 'motion/react';
-import { useRef } from 'react';
-import TrainingCard from './TrainingCard';
+import { ILearningPath } from '@/models/LearningPath';
+import { motion } from 'motion/react';
 import { clsx } from 'clsx';
+import { useState } from 'react';
 
 interface LearningPathProps {
+    title?: string; // e.g. "SA Islamic Skill Deck"
+    frequency?: string; // Top-level frequency
     trainings: ITraining[];
     onSelectTraining: (t: ITraining) => void;
 }
 
-const LearningPath = ({ trainings, onSelectTraining }: LearningPathProps) => {
-    // We don't use horizontal scroll anymore, we use a vertical stacking list
+const LearningPath = ({ title, frequency, trainings, onSelectTraining }: LearningPathProps) => {
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto py-12 px-4 md:px-0">
-            {/* The "Deck" Container */}
-            <div className="space-y-12 relative">
-                {/* Continuous Background Line */}
-                <div className="absolute left-[42px] md:left-[30px] top-8 bottom-8 w-1 bg-zinc-100 z-0 hidden md:block" />
+        <div className="w-full max-w-7xl mx-auto py-8">
+            <div className="border border-zinc-300 bg-white shadow-sm overflow-hidden">
+                {/* Header Row */}
+                <div className="bg-[#FFFF00] border-b border-zinc-300 py-2 px-4 text-center font-bold text-black border-l-4 border-l-transparent">
+                    {/* Yellow Header (based on image mock but user said Green? User said "Green one is the designation... SA Islamic Skill Deck" but image shows yellow headers 'Learning Path 2' etc. 
+                    Wait, let's look at the image again. 
+                    The uploaded image 1 has a Yellow "Learning Path 2" header, and below it a Green-ish row "SA Islamic Skills Deck" spanning the first column?
+                    Actually, looking at the layout:
+                    Row 1 (Yellow): "Learning Path 2" (Title?)
+                    Row 2 (Green-ish): "SA Islamic Skills Deck" (Col 1), "Course Overview" (Col 2), "Frequency" (Col 3)
+                    Row 3+: Content
+                    
+                    The user said: "in Learning Path there will be like the the Green one is the designation like for this designation the learningPath is like 'SA Islamic Skill Deck' so SA is designation Islamic Skill Deck is Path name"
+                    
+                    So the Green row is the header for the specific path?
+                    Let's try to replicate the table structure.
+                    
+                    Table Structure:
+                    | Col 1 (Learning Path Name) | Col 2 (Course Overview) | Col 3 (Frequency) |
+                    
+                    The first cell of the header row is the Learning Path Name (e.g., "SA Islamic Skill Deck").
+                    The second cell is "Course Overview".
+                    The third cell is "Frequency".
+                    
+                    Then rows of trainings below it.
+                    */}
 
-                {trainings.map((training, index) => {
-                    return (
-                        <StickyCard
-                            key={training._id as string}
-                            training={training}
-                            index={index}
-                            total={trainings.length}
-                            onClick={() => onSelectTraining(training)}
-                        />
-                    );
-                })}
+                    {/* 
+                     Actually, let's stick to a cleaner table structure that achieves the goal:
+                     Header: [Path Name] | Course Overview | Frequency
+                     Rows: [Training Name] | [Description] | [Frequency]
+                     
+                     Wait, the image has "SA Islamic Skills Deck" as a HEADER for the first column? 
+                     And then under it lists trainings?
+                     
+                     Let's do:
+                     <Table>
+                       <Head>
+                         <Row>
+                           <HeaderCell className="bg-green-200">{title || 'Learning Path'}</HeaderCell>
+                           <HeaderCell className="bg-green-200">Course Overview</HeaderCell>
+                           <HeaderCell className="bg-green-200">Frequency</HeaderCell>
+                         </Row>
+                       </Head>
+                       <Body>
+                         {trainings.map...}
+                       </Body>
+                     </Table>
+                     
+                     The user said "Green one is the designation...". 
+                     I'll use a light green background for the header row.
+                     */}
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left border-collapse">
+                        <thead>
+                            <tr className="bg-[#D1FAE5] text-zinc-900 border-b border-zinc-300">
+                                <th className="py-3 px-4 font-bold w-1/4 border-r border-zinc-300">
+                                    <div className="flex flex-col">
+                                        <span>{title || 'Learning Path'}</span>
+                                        {frequency && (
+                                            <span className="text-xs font-normal text-zinc-600 mt-1">
+                                                Frequency: {frequency}
+                                            </span>
+                                        )}
+                                    </div>
+                                </th>
+                                <th className="py-3 px-4 font-bold w-1/2 border-r border-zinc-300 text-center">
+                                    Course Overview
+                                </th>
+                                <th className="py-3 px-4 font-bold w-1/4 text-center">
+                                    Frequency
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-200">
+                            {trainings.map((training, index) => (
+                                <tr
+                                    key={training._id as unknown as string}
+                                    className="hover:bg-zinc-50 transition-colors group cursor-pointer"
+                                    onClick={() => onSelectTraining(training)}
+                                >
+                                    <td className="py-3 px-4 border-r border-zinc-200 align-top font-medium text-zinc-900 group-hover:text-teal-600 transition-colors">
+                                        {training.programTitle}
+                                    </td>
+                                    <td className="py-3 px-4 border-r border-zinc-200 align-top text-zinc-600 space-y-2">
+                                        <div className="line-clamp-4 leading-relaxed whitespace-pre-line">
+                                            {training.outcomesBenefits || training.programObjective || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="py-3 px-4 align-top text-center text-zinc-600 whitespace-nowrap">
+                                        {training.frequency || '-'}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-
-            {/* Spacer for bottom */}
-            <div className="h-24" />
         </div>
     );
 };
-
-interface StickyCardProps {
-    training: ITraining;
-    index: number;
-    total: number;
-    onClick: () => void;
-}
-
-const StickyCard = ({ training, index, total, onClick }: StickyCardProps) => {
-    // Sticky header calculation
-    // Top offset increases slightly for each card so they stack nicely visible
-    const topOffset = 140 + (index * 10);
-
-    return (
-        <motion.div
-
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.5, delay: index * 0.05 }}
-            className="sticky"
-            style={{
-                top: topOffset,
-                zIndex: index
-            }}
-        >
-            <div className="relative">
-                {/* Connector Line Logic (Removed in favor of global line) */}
-                {/* {index !== total - 1 && (
-                     <div className="absolute left-8 top-full h-24 w-0.5 bg-gradient-to-b from-teal-500 to-transparent z-[-1]" />
-                )} */}
-
-                <div className="flex items-start gap-6">
-                    {/* Step Number Bubble */}
-                    <div className="hidden md:flex flex-col items-center gap-2 pt-6">
-                        <div className="w-16 h-16 rounded-full bg-white border-4 border-zinc-100 shadow-md flex items-center justify-center font-bold text-xl text-teal-600 z-10">
-                            {index + 1}
-                        </div>
-                    </div>
-
-                    {/* Card Container */}
-                    <div className="w-full">
-                        <TrainingCard training={training} onClick={onClick} />
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    )
-}
-
 
 export default LearningPath;

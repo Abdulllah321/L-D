@@ -1,62 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Designation from '@/models/Designation';
+import TrainingAssignment from '@/models/TrainingAssignment';
 import { getAuthFromRequest } from '@/lib/auth';
 
-// GET single designation (public)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    await connectDB();
-    const { id } = await params;
-
-    const designation = await Designation.findOne({ id: id.toUpperCase() });
-
-    if (!designation) {
-      return NextResponse.json(
-        { error: 'Designation not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ designation }, { status: 200 });
-  } catch (error: any) {
-    console.error('Error fetching designation:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch designation' },
-      { status: 500 }
-    );
-  }
-}
-
-// PUT update designation (admin only)
+// PUT update designation
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
+    // Check authentication
+    const token = request.cookies.get('admin_token')?.value;
+    if (!token) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const auth = getAuthFromRequest(request);
-
     if (!auth) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
     const { id } = await params;
-
-    const data = await request.json();
-    const { title, summary, iconName, coreTrainings, refreshers, order } = data;
-
-    // Try to find by _id first, then by id field
-    let designation = await Designation.findById(id);
+    const body = await request.json();
     
+    // We update using the flexible ID field, not _id
+    // But wait, the route param `id` might be the _id or the custom `id`.
+    // The frontend passes `editingId` which usually comes from `_id` or `id`.
+    // In `DesignationsPage`, `key={designation._id || designation.id}`.
+    // The `handleDelete` uses `designation.id` (custom ID)?
+    // Let's check `handleDelete` in page.tsx... it calls `/api/designations/${id}`.
+    // It seems `Designation` model has a custom `id` field.
+    // Let's support looking up by _id first, then custom id.
+    
+    let designation = await Designation.findById(id);
     if (!designation) {
-      designation = await Designation.findOne({ id: id.toUpperCase() });
+        designation = await Designation.findOne({ id: id });
     }
 
     if (!designation) {
@@ -66,21 +45,15 @@ export async function PUT(
       );
     }
 
-    // Update fields (supporting both simplified and legacy fields)
-    if (title !== undefined) designation.title = title;
-    if (summary !== undefined) designation.summary = summary;
-    if (iconName !== undefined) designation.iconName = iconName;
-    if (coreTrainings !== undefined) designation.coreTrainings = parseInt(coreTrainings);
-    if (refreshers !== undefined) designation.refreshers = parseInt(refreshers);
-    if (order !== undefined && order !== null) designation.order = parseInt(order);
+    // Update fields
+    if (body.title) designation.title = body.title;
+    if (body.subDesignations) designation.subDesignations = body.subDesignations;
+    // Add other fields if necessary
 
     await designation.save();
 
-    return NextResponse.json(
-      { message: 'Designation updated successfully', designation },
-      { status: 200 }
-    );
-  } catch (error: any) {
+    return NextResponse.json({ designation });
+  } catch (error) {
     console.error('Error updating designation:', error);
     return NextResponse.json(
       { error: 'Failed to update designation' },
@@ -89,29 +62,28 @@ export async function PUT(
   }
 }
 
-// DELETE designation (admin only)
+// DELETE designation
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
+     // Check authentication
+    const token = request.cookies.get('admin_token')?.value;
+    if (!token) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const auth = getAuthFromRequest(request);
-
     if (!auth) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await connectDB();
     const { id } = await params;
 
-    // Try to find by _id first, then by id field
-    let designation = await Designation.findByIdAndDelete(id);
-    
+    let designation = await Designation.findById(id);
     if (!designation) {
-      designation = await Designation.findOneAndDelete({ id: id.toUpperCase() });
+        designation = await Designation.findOne({ id: id });
     }
 
     if (!designation) {
@@ -121,11 +93,15 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json(
-      { message: 'Designation deleted successfully' },
-      { status: 200 }
-    );
-  } catch (error: any) {
+    // Delete the designation
+    await designation.deleteOne();
+
+    // Also delete associated assignments?
+    // Ideally yes, to keep DB clean.
+    await TrainingAssignment.deleteMany({ designationId: designation.id });
+
+    return NextResponse.json({ message: 'Designation deleted successfully' });
+  } catch (error) {
     console.error('Error deleting designation:', error);
     return NextResponse.json(
       { error: 'Failed to delete designation' },
@@ -133,4 +109,3 @@ export async function DELETE(
     );
   }
 }
-

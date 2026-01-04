@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const data = await request.json();
-    const { id, title, summary, iconName, coreTrainings, refreshers, order } = data;
+    const { id, title, summary, iconName, coreTrainings, refreshers, order, subDesignations } = data;
 
     if (!id || !title || !summary || !iconName || coreTrainings === undefined || refreshers === undefined) {
       return NextResponse.json(
@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       coreTrainings: parseInt(coreTrainings),
       refreshers: parseInt(refreshers),
       order: finalOrder,
+      subDesignations: subDesignations || [],
     });
 
     await designation.save();

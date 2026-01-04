@@ -1,10 +1,12 @@
 'use client';
 
-import DesignationDetailView from '@/components/catalog/DesignationDetailView';
+import DesignationDetailView, { SubDesignationContent, CatalogItem, TrackContent } from '@/components/catalog/DesignationDetailView';
 import { useCatalog } from '@/context/CatalogContext';
 import { motion } from 'motion/react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { ITraining } from '@/models/Training';
+import { ILearningPath } from '@/models/LearningPath';
 
 export default function DesignationPage() {
     const params = useParams();
@@ -16,6 +18,7 @@ export default function DesignationPage() {
     const designations = catalogData.designations;
     const trainings = catalogData.trainings;
     const assignments = catalogData.assignments;
+    const learningPaths = catalogData.learningPaths;
     const loading = catalogData.loading;
 
     // Fetch details for designation and navigation (Context)
@@ -29,28 +32,154 @@ export default function DesignationPage() {
         const prevDesignation = currentIndex > 0 ? designations[currentIndex - 1] : null;
         const nextDesignation = currentIndex < designations.length - 1 ? designations[currentIndex + 1] : null;
 
-        // Filter and Hydrate Assignments
-        const relevantAssignments = assignments.filter(a => a.designationId === designationId);
+        // Helper to process assignments into TrackContent
+        const getTrackContent = (trackType: 'normal' | 'hi-po', annualType: 'annual-regular' | 'annual-ecourse' | null, subDesignationId?: string): TrackContent => {
+            const relevantAssignments = assignments.filter(a => {
+                const matchesDesignation = a.designationId === designationId;
+                const matchesTrackType = a.trackType === trackType;
+                const matchesAnnualType = (annualType === null && (!a.annualType || a.annualType === null)) || 
+                                         (annualType !== null && a.annualType === annualType);
+                const matchesSubDesignation = subDesignationId 
+                    ? a.subDesignationId === subDesignationId 
+                    : (!a.subDesignationId || a.subDesignationId === null);
+                
+                return matchesDesignation && matchesTrackType && matchesAnnualType && matchesSubDesignation;
+            });
 
-        const getTrackTrainings = (trackType: 'normal' | 'hi-po') => {
-            return relevantAssignments
-                .filter(a => a.trackType === trackType)
-                // Sort by order if available
-                .sort((a, b) => (a.order || 0) - (b.order || 0))
-                .map(a => trainings.find(t => t._id === a.trainingId || t._id === (a.trainingId as any).toString()))
-                .filter(Boolean) as any[];
+            // Sort by order
+            relevantAssignments.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const items: CatalogItem[] = relevantAssignments.map(assignment => {
+                // Handle custom training names
+                if (assignment.customTrainingName) {
+                    return {
+                        type: 'training',
+                        data: {
+                            _id: assignment._id.toString(),
+                            programTitle: assignment.customTrainingName,
+                            programObjective: '',
+                            outcomesBenefits: '',
+                            frequency: '',
+                            code: 'CUSTOM',
+                            duration: '-',
+                            trainingProvider: 'Internal',
+                            costPerPax: 0
+                        } as unknown as ITraining
+                    };
+                }
+
+                if (assignment.trainingId) {
+                    const training = trainings.find(t => t._id === assignment.trainingId ||
+                        t._id === (assignment.trainingId as any).toString());
+                    if (!training) return null;
+                    return { type: 'training', data: training };
+                }
+
+                if (assignment.learningPathId) {
+                    const lp = learningPaths.find(l => l._id === assignment.learningPathId ||
+                        l._id === (assignment.learningPathId as any).toString());
+                    if (!lp) return null;
+
+                    // Resolve trainings within LP
+                    // Assuming lp.trainings contains ObjectIds
+                    const lpTrainings = (lp.trainings || []).map((lpItem: any) => {
+                        // Case 1: Custom Placeholder Item or Copy-Text
+                        if (lpItem.isPlaceholder || !lpItem.trainingId) {
+                            return {
+                                _id: lpItem._id || `custom-${Math.random()}`,
+                                programTitle: lpItem.title || "Custom Item",
+                                outcomesBenefits: lpItem.courseOverview,
+                                programObjective: lpItem.courseOverview, // Fallback
+                                frequency: lpItem.frequency,
+                                // Default/Empty values for required fields to satisfy ITraining
+                                code: "CUSTOM",
+                                duration: "-",
+                                trainingProvider: "Internal",
+                                costPerPax: 0
+                            } as unknown as ITraining;
+                        }
+
+                        // Case 2: Linked Training
+                        const tId = lpItem.trainingId;
+                        const training = trainings.find(t => t._id === tId || t._id === tId.toString());
+
+                        if (!training) return null;
+
+                        // Case 3: Linked Training with Overrides
+                        return {
+                            ...training,
+                            outcomesBenefits: lpItem.courseOverview || training.outcomesBenefits,
+                            programObjective: lpItem.courseOverview || training.programObjective,
+                            frequency: lpItem.frequency || training.frequency
+                        };
+                    }).filter(Boolean) as ITraining[];
+
+                    return { type: 'learning-path', data: lp, trainings: lpTrainings };
+                }
+                return null;
+            }).filter(Boolean) as CatalogItem[];
+
+            return { items };
         };
+
+        const subDesignationsContent: SubDesignationContent[] = [];
+
+        // 1. Main Content (No Sub-Designation)
+        // Check if there are assignments for main category
+        // Or if there are no sub-designations, this is the default view
+        const hasMainAssignments = assignments.some(a => a.designationId === designationId && !a.subDesignationId);
+
+        // Always add Main/General tab if there are no sub-designations OR if there are assignments for it
+        if (!designation.subDesignations?.length || hasMainAssignments) {
+            subDesignationsContent.push({
+                id: 'main',
+                title: designation.subDesignations?.length ? 'General' : 'Main',
+                tracks: {
+                    normal: {
+                        regular: getTrackContent('normal', null),
+                        annualRegular: getTrackContent('normal', 'annual-regular'),
+                        annualEcourse: getTrackContent('normal', 'annual-ecourse')
+                    },
+                    hiPo: {
+                        regular: getTrackContent('hi-po', null),
+                        annualRegular: getTrackContent('hi-po', 'annual-regular'),
+                        annualEcourse: getTrackContent('hi-po', 'annual-ecourse')
+                    }
+                }
+            });
+        }
+
+        // 2. Sub-Designations Content
+        if (designation.subDesignations) {
+            designation.subDesignations.forEach(sub => {
+                subDesignationsContent.push({
+                    id: sub.id,
+                    title: sub.title,
+                    tracks: {
+                        normal: {
+                            regular: getTrackContent('normal', null, sub.id),
+                            annualRegular: getTrackContent('normal', 'annual-regular', sub.id),
+                            annualEcourse: getTrackContent('normal', 'annual-ecourse', sub.id)
+                        },
+                        hiPo: {
+                            regular: getTrackContent('hi-po', null, sub.id),
+                            annualRegular: getTrackContent('hi-po', 'annual-regular', sub.id),
+                            annualEcourse: getTrackContent('hi-po', 'annual-ecourse', sub.id)
+                        }
+                    }
+                });
+            });
+        }
 
         return {
             designation,
-            normalTrack: getTrackTrainings('normal'),
-            hiPoTrack: getTrackTrainings('hi-po'),
+            subDesignationsContent,
             navData: {
                 prev: prevDesignation ? { id: prevDesignation.id, title: prevDesignation.title } : null,
                 next: nextDesignation ? { id: nextDesignation.id, title: nextDesignation.title } : null
             }
         };
-    }, [designationId, designations, trainings, assignments, loading]);
+    }, [designationId, designations, trainings, assignments, learningPaths, loading]);
 
     // Handle Not Found
     useEffect(() => {
@@ -76,8 +205,7 @@ export default function DesignationPage() {
     return (
         <DesignationDetailView
             designation={data.designation}
-            normalTrack={data.normalTrack}
-            hiPoTrack={data.hiPoTrack}
+            subDesignationsContent={data.subDesignationsContent}
             navigation={data.navData}
         />
     );
