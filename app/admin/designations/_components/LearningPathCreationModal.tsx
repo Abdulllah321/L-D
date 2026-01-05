@@ -17,6 +17,7 @@ interface LearningPathCreationModalProps {
     setLpSelectedTrainings: React.Dispatch<React.SetStateAction<SelectedTraining[]>>;
     handleCreateLearningPath: () => void;
     learningDecks: LearningDeck[];
+    editingLearningPathId?: string | null;
 }
 
 export function LearningPathCreationModal({
@@ -29,6 +30,7 @@ export function LearningPathCreationModal({
     setLpSelectedTrainings,
     handleCreateLearningPath,
     learningDecks,
+    editingLearningPathId,
 }: LearningPathCreationModalProps) {
 
     const [customItemText, setCustomItemText] = useState("");
@@ -105,8 +107,12 @@ export function LearningPathCreationModal({
                             {/* Header */}
                             <div className="sticky top-0 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-8 py-5 flex items-center justify-between rounded-t-2xl z-10">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Create Learning Path</h2>
-                                    <p className="text-sm text-gray-500 mt-0.5">Build a curated collection of training modules</p>
+                                    <h2 className="text-2xl font-bold text-gray-900">
+                                        {editingLearningPathId ? 'Edit Learning Path' : 'Create Learning Path'}
+                                    </h2>
+                                    <p className="text-sm text-gray-500 mt-0.5">
+                                        {editingLearningPathId ? 'Update your learning path details' : 'Build a curated collection of training modules'}
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => setShowLPCreationModal(false)}
@@ -320,7 +326,7 @@ export function LearningPathCreationModal({
                                     disabled={!newLPData.title || lpSelectedTrainings.length === 0}
                                     className="px-8 py-3 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl font-semibold hover:from-teal-700 hover:to-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
                                 >
-                                    Create Learning Path
+                                    {editingLearningPathId ? 'Update Learning Path' : 'Create Learning Path'}
                                 </button>
                             </div>
                         </div>

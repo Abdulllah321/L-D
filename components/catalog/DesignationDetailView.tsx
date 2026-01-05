@@ -146,8 +146,8 @@ export default function DesignationDetailView({
     const renderLearningPathCard = (item: CatalogItem & { type: 'learning-path' }, index: number) => {
         const getInitials = (str: string) => str.split(' ').map(n => n[0]).join('').toUpperCase();
         const prefix = designation.title ? getInitials(designation.title) : 'LP';
-        const titleCode = designation.id.length <= 4 ? designation.id : prefix;
-        const title = `${titleCode} ${item.data.title}`;
+        // const titleCode = designation.id.length <= 4 ? designation.id : prefix;
+        const title = `${item.data.title}`;
 
         return (
             <motion.div
@@ -275,7 +275,7 @@ export default function DesignationDetailView({
                             </div>
                             <div className="text-left">
                                 <h3 className="font-bold text-zinc-900">{label}</h3>
-                                <p className="text-sm text-zinc-500">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+                                <p className="text-sm text-zinc-500">{items.length} {annualKey === 'regular' ? 'training' : annualKey === 'annual-regular' ? 'refresher' : 'course'}{items.length !== 1 ? 's' : ''}</p>
                             </div>
                         </div>
                         <motion.div
@@ -356,7 +356,7 @@ export default function DesignationDetailView({
                         <div className="text-left">
                             <h2 className="text-2xl font-bold text-zinc-900">{trackLabel}</h2>
                             <p className="text-sm text-zinc-600 mt-1">
-                                {trackData.regular.items.length + trackData.annualRegular.items.length + trackData.annualEcourse.items.length} total items
+                                {trackData.regular.items.length + trackData.annualRegular.items.length + trackData.annualEcourse.items.length} total trainings
                             </p>
                         </div>
                     </div>
@@ -381,7 +381,7 @@ export default function DesignationDetailView({
                             {renderAnnualTypeSection(
                                 trackKey,
                                 'regular',
-                                'Regular Learning Track',
+                                'Standard Learning Track',
                                 <IconBriefcase size={20} />,
                                 {
                                     bg: 'bg-blue-50',
@@ -395,7 +395,7 @@ export default function DesignationDetailView({
                             {renderAnnualTypeSection(
                                 trackKey,
                                 'annual-regular',
-                                'Annual/Bi-Annual Regular / Refresher',
+                                'Annual/Bi-Annual Refreshers',
                                 <IconCalendar size={20} />,
                                 {
                                     bg: 'bg-green-50',
@@ -409,7 +409,7 @@ export default function DesignationDetailView({
                             {renderAnnualTypeSection(
                                 trackKey,
                                 'annual-ecourse',
-                                'E-Course Learning Track',
+                                'E-Learning Track',
                                 <IconDeviceLaptop size={20} />,
                                 {
                                     bg: 'bg-purple-50',
@@ -511,7 +511,7 @@ export default function DesignationDetailView({
                                 {/* Normal Track */}
                                 {renderTrackSection(
                                     'normal',
-                                    'Normal Track',
+                                    'Development Plan',
                                     <IconBriefcase size={28} />,
                                     {
                                         gradient: 'bg-gradient-to-r from-blue-50 to-blue-100/50',

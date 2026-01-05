@@ -59,6 +59,9 @@ export async function PUT(
       assessmentFollowUp,
       reviewDate,
       schedule,
+      isHalfDay,
+      isOnline,
+      prerequisites,
     } = data;
 
     let training = await Training.findById(id);
@@ -75,6 +78,9 @@ export async function PUT(
     if (trainingPartner !== undefined) training.trainingPartner = trainingPartner;
     if (targetAudience !== undefined) training.targetAudience = targetAudience;
     if (durationFormat !== undefined) training.durationFormat = durationFormat;
+    if (isHalfDay !== undefined) training.isHalfDay = isHalfDay;
+    if (isOnline !== undefined) training.isOnline = isOnline;
+    if (prerequisites !== undefined) training.prerequisites = prerequisites;
     if (competencies) training.competencies = competencies;
     if (outcomesBenefits !== undefined) training.outcomesBenefits = outcomesBenefits;
     if (frequency !== undefined) training.frequency = frequency;

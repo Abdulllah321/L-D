@@ -28,6 +28,8 @@ export interface ITraining extends Document {
   targetAudience: string;
   durationFormat: string;
   isHalfDay?: boolean; // Whether this is a half-day training
+  isOnline?: boolean; // Whether this is an online training
+  prerequisites?: string; // Prerequisites for the training
   competencies: {
     functional?: string[];
     core?: string[];
@@ -47,7 +49,7 @@ const TrainingDaySchema = new Schema<ITrainingDay>({
   heading: { type: String, trim: true }, // Optional top-level heading grouping
   mainTopic: { type: String, trim: true }, // Optional main topic grouping
   topic: { type: String, required: true },
-  time: { type: String, required: true },
+  time: { type: String, required: false }, // Made optional - validation handled in form
   duration: { type: String, trim: true }, // Optional separate duration
   isBreak: { type: Boolean, default: false },
   breakType: { type: String, enum: ['lunch', 'tea', 'Other Activity'] },
@@ -93,6 +95,14 @@ const TrainingSchema = new Schema<ITraining>(
     isHalfDay: {
       type: Boolean,
       default: false,
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    prerequisites: {
+      type: String,
+      trim: true,
     },
     competencies: {
       functional: [{ type: String }],

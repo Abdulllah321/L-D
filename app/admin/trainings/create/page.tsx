@@ -48,6 +48,8 @@ interface Training {
   targetAudience: string;
   durationFormat: string;
   isHalfDay?: boolean; // Whether this is a half-day training
+  isOnline?: boolean; // Whether this is an online training
+  prerequisites?: string; // Prerequisites for the training
   competencies: {
     functional?: string[];
     core?: string[];
@@ -84,6 +86,8 @@ function CreateTrainingPage() {
     targetAudience: "",
     durationFormat: "",
     isHalfDay: false,
+    isOnline: false,
+    prerequisites: "",
     competencies: { functional: [], core: [], leadership: [] },
     outcomesBenefits: "",
     frequency: "",
@@ -152,6 +156,8 @@ function CreateTrainingPage() {
           targetAudience: training.targetAudience || "",
           durationFormat: training.durationFormat || "",
           isHalfDay: training.isHalfDay || false,
+          isOnline: training.isOnline || false,
+          prerequisites: training.prerequisites || "",
           competencies: {
             functional: Array.isArray(training.competencies?.functional) 
               ? training.competencies.functional 
@@ -258,21 +264,24 @@ function CreateTrainingPage() {
   };
 
   const addScheduleItem = () => {
-    // For quiz and certificate distribution items, only time is required
-    if (!currentScheduleItem.time) {
+    // For online trainings, time is not required
+    const isOnlineTraining = formData.isOnline;
+    
+    // For quiz and certificate distribution items, only time is required (if not online)
+    if (!isOnlineTraining && !currentScheduleItem.time) {
       showToast("Please fill in time", "warning");
       return;
     }
     
     // For non-quiz, non-break, and non-certificate items, topic is required
     if (!currentScheduleItem.isQuiz && !currentScheduleItem.isBreak && !currentScheduleItem.isCertificateDistribution && !currentScheduleItem.topic) {
-      showToast("Please fill in topic/activity and time", "warning");
+      showToast("Please fill in topic/activity" + (isOnlineTraining ? "" : " and time"), "warning");
       return;
     }
     
     // For break items, topic (label) is required
     if (currentScheduleItem.isBreak && !currentScheduleItem.topic) {
-      showToast("Please fill in break label and time", "warning");
+      showToast("Please fill in break label" + (isOnlineTraining ? "" : " and time"), "warning");
       return;
     }
 
@@ -290,13 +299,13 @@ function CreateTrainingPage() {
         heading: currentScheduleItem.heading?.trim() || undefined,
         mainTopic: currentScheduleItem.mainTopic?.trim() || undefined,
         topic: currentScheduleItem.topic || (currentScheduleItem.isQuiz ? "Quiz" : currentScheduleItem.isCertificateDistribution ? "Certificate Distribution & Group Photo" : ""),
-        time: currentScheduleItem.time || "",
+        time: isOnlineTraining ? "" : (currentScheduleItem.time || ""), // Empty for online trainings
         duration: currentScheduleItem.duration?.trim() || undefined,
         isBreak: currentScheduleItem.isBreak || false,
         breakType: currentScheduleItem.breakType,
         isQuiz: currentScheduleItem.isQuiz || false,
         isCertificateDistribution: currentScheduleItem.isCertificateDistribution || false,
-        presenters: currentScheduleItem.presenters || {},
+        presenters: isOnlineTraining ? {} : (currentScheduleItem.presenters || {}), // Empty for online trainings
         notes: currentScheduleItem.notes || "",
         order: order,
       };
@@ -611,22 +620,61 @@ function CreateTrainingPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isHalfDay || false}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isHalfDay: e.target.checked })
+                    }
+                    className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">
+                    Half Day Training
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-8">
+                  Check this if the training is conducted in half a day instead of a full day
+                </p>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.isOnline || false}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isOnline: e.target.checked })
+                    }
+                    className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">
+                    Online Training
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-8">
+                  Check this if the training is conducted online (time and presenters not required)
+                </p>
+              </div>
+            </div>
+
             <div>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.isHalfDay || false}
-                  onChange={(e) =>
-                    setFormData({ ...formData, isHalfDay: e.target.checked })
-                  }
-                  className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
-                />
-                <span className="text-sm font-semibold text-gray-700">
-                  Half Day Training
-                </span>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Prerequisites
               </label>
-              <p className="text-xs text-gray-500 mt-1 ml-8">
-                Check this if the training is conducted in half a day instead of a full day
+              <textarea
+                value={formData.prerequisites || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, prerequisites: e.target.value })
+                }
+                rows={3}
+                placeholder="List any prerequisites or pre-requisite trainings required before taking this course..."
+                className="w-full px-4 py-3 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Specify any prerequisites or pre-requisite trainings that participants should complete before this training
               </p>
             </div>
           </section>
@@ -978,21 +1026,23 @@ function CreateTrainingPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                    Time *
-                  </label>
-                  <input
-                    type="text"
-                    value={currentScheduleItem.time || ""}
-                    onChange={(e) =>
-                      setCurrentScheduleItem({ ...currentScheduleItem, time: e.target.value })
-                    }
-                    onKeyDown={handleScheduleFormKeyDown}
-                    placeholder="e.g., 09:30 am - 01:00 pm"
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
+                {!formData.isOnline && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                      Time *
+                    </label>
+                    <input
+                      type="text"
+                      value={currentScheduleItem.time || ""}
+                      onChange={(e) =>
+                        setCurrentScheduleItem({ ...currentScheduleItem, time: e.target.value })
+                      }
+                      onKeyDown={handleScheduleFormKeyDown}
+                      placeholder="e.g., 09:30 am - 01:00 pm"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1.5">
                     Duration (Optional)
@@ -1088,92 +1138,99 @@ function CreateTrainingPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                        Presenter - North
-                      </label>
-                      <input
-                        type="text"
-                        value={currentScheduleItem.presenters?.north || ""}
-                        onChange={(e) =>
-                          setCurrentScheduleItem({
-                            ...currentScheduleItem,
-                            presenters: {
-                              ...currentScheduleItem.presenters,
-                              north: e.target.value,
-                            },
-                          })
-                        }
-                        onKeyDown={handleScheduleFormKeyDown}
-                        placeholder="e.g., Zubia Shehryar"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
+                  {!formData.isOnline && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                          Presenter - North
+                        </label>
+                        <input
+                          type="text"
+                          value={currentScheduleItem.presenters?.north || ""}
+                          onChange={(e) =>
+                            setCurrentScheduleItem({
+                              ...currentScheduleItem,
+                              presenters: {
+                                ...currentScheduleItem.presenters,
+                                north: e.target.value,
+                              },
+                            })
+                          }
+                          onKeyDown={handleScheduleFormKeyDown}
+                          placeholder="e.g., Zubia Shehryar"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                          Presenter - Central I
+                        </label>
+                        <input
+                          type="text"
+                          value={currentScheduleItem.presenters?.centralI || ""}
+                          onChange={(e) =>
+                            setCurrentScheduleItem({
+                              ...currentScheduleItem,
+                              presenters: {
+                                ...currentScheduleItem.presenters,
+                                centralI: e.target.value,
+                              },
+                            })
+                          }
+                          onKeyDown={handleScheduleFormKeyDown}
+                          placeholder="e.g., Habiba Sulman"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                          Presenter - Central II
+                        </label>
+                        <input
+                          type="text"
+                          value={currentScheduleItem.presenters?.centralII || ""}
+                          onChange={(e) =>
+                            setCurrentScheduleItem({
+                              ...currentScheduleItem,
+                              presenters: {
+                                ...currentScheduleItem.presenters,
+                                centralII: e.target.value,
+                              },
+                            })
+                          }
+                          onKeyDown={handleScheduleFormKeyDown}
+                          placeholder="e.g., Saba Noor"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                          Presenter - South
+                        </label>
+                        <input
+                          type="text"
+                          value={currentScheduleItem.presenters?.south || ""}
+                          onChange={(e) =>
+                            setCurrentScheduleItem({
+                              ...currentScheduleItem,
+                              presenters: {
+                                ...currentScheduleItem.presenters,
+                                south: e.target.value,
+                              },
+                            })
+                          }
+                          onKeyDown={handleScheduleFormKeyDown}
+                          placeholder="e.g., Junella"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                        Presenter - Central I
-                      </label>
-                      <input
-                        type="text"
-                        value={currentScheduleItem.presenters?.centralI || ""}
-                        onChange={(e) =>
-                          setCurrentScheduleItem({
-                            ...currentScheduleItem,
-                            presenters: {
-                              ...currentScheduleItem.presenters,
-                              centralI: e.target.value,
-                            },
-                          })
-                        }
-                        onKeyDown={handleScheduleFormKeyDown}
-                        placeholder="e.g., Habiba Sulman"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
+                  )}
+                  {formData.isOnline && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-700">
+                      ℹ️ Online Training: Time and presenters are not required for online trainings. Duration can still be specified.
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                        Presenter - Central II
-                      </label>
-                      <input
-                        type="text"
-                        value={currentScheduleItem.presenters?.centralII || ""}
-                        onChange={(e) =>
-                          setCurrentScheduleItem({
-                            ...currentScheduleItem,
-                            presenters: {
-                              ...currentScheduleItem.presenters,
-                              centralII: e.target.value,
-                            },
-                          })
-                        }
-                        onKeyDown={handleScheduleFormKeyDown}
-                        placeholder="e.g., Saba Noor"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                        Presenter - South
-                      </label>
-                      <input
-                        type="text"
-                        value={currentScheduleItem.presenters?.south || ""}
-                        onChange={(e) =>
-                          setCurrentScheduleItem({
-                            ...currentScheduleItem,
-                            presenters: {
-                              ...currentScheduleItem.presenters,
-                              south: e.target.value,
-                            },
-                          })
-                        }
-                        onKeyDown={handleScheduleFormKeyDown}
-                        placeholder="e.g., Junella"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </>
               )}
 
@@ -1322,9 +1379,16 @@ function CreateTrainingPage() {
                                             <div className="flex items-start justify-between gap-3">
                                               <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-1">
-                                                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                                                    {item.time}
-                                                  </span>
+                                                  {item.time && (
+                                                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                                      {item.time}
+                                                    </span>
+                                                  )}
+                                                  {formData.isOnline && !item.time && (
+                                                    <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                                                      Online
+                                                    </span>
+                                                  )}
                                                   {item.duration && (
                                                     <span className="text-xs text-gray-500">({item.duration})</span>
                                                   )}
@@ -1355,7 +1419,7 @@ function CreateTrainingPage() {
                                                 }`}>
                                                   {item.topic}
                                                 </h5>
-                                                {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && (
+                                                {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && !formData.isOnline && (
                                                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                                                     {item.presenters?.north && (
                                                       <p className="text-gray-600">
@@ -1420,9 +1484,16 @@ function CreateTrainingPage() {
                                               <div className="flex items-start justify-between gap-3">
                                                 <div className="flex-1">
                                                   <div className="flex items-center gap-3 mb-1">
-                                                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                                                      {item.time}
-                                                    </span>
+                                                    {item.time && (
+                                                      <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                                        {item.time}
+                                                      </span>
+                                                    )}
+                                                    {formData.isOnline && !item.time && (
+                                                      <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                                                        Online
+                                                      </span>
+                                                    )}
                                                     {item.duration && (
                                                       <span className="text-xs text-gray-500">({item.duration})</span>
                                                     )}
@@ -1453,7 +1524,7 @@ function CreateTrainingPage() {
                                                   }`}>
                                                     {item.topic}
                                                   </h5>
-                                                  {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && (
+                                                  {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && !formData.isOnline && (
                                                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                                                       {item.presenters?.north && (
                                                         <p className="text-gray-600">
@@ -1526,9 +1597,16 @@ function CreateTrainingPage() {
                                             <div className="flex items-start justify-between gap-3">
                                               <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-1">
-                                                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                                                    {item.time}
-                                                  </span>
+                                                  {item.time && (
+                                                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                                                      {item.time}
+                                                    </span>
+                                                  )}
+                                                  {formData.isOnline && !item.time && (
+                                                    <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                                                      Online
+                                                    </span>
+                                                  )}
                                                   {item.duration && (
                                                     <span className="text-xs text-gray-500">({item.duration})</span>
                                                   )}
@@ -1559,7 +1637,7 @@ function CreateTrainingPage() {
                                                 }`}>
                                                   {item.topic}
                                                 </h5>
-                                                {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && (
+                                                {!item.isBreak && !item.isQuiz && !item.isCertificateDistribution && !formData.isOnline && (
                                                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                                                     {item.presenters?.north && (
                                                       <p className="text-gray-600">

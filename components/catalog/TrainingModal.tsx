@@ -157,18 +157,52 @@ export default function TrainingModal({ training, isOpen, onClose }: TrainingMod
                           <IconCalendar className="text-violet-500" size={20} />
                           Schedule
                         </h3>
-                        <div className="space-y-4">
-                          {training.schedule.map((day, idx) => (
-                            <div key={idx} className="border-l-2 border-zinc-200 pl-4 py-2 relative">
-                              <div className="absolute -left-[9px] top-3 w-4 h-4 rounded-full bg-white border-2 border-teal-500" />
-                              <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 mb-1">
-                                <span className="text-sm font-bold text-teal-600">Day {day.day}</span>
-                                <span className="text-sm text-zinc-500">{day.time}</span>
-                              </div>
-                              <h4 className="font-semibold text-zinc-800">{day.topic}</h4>
-                              {day.mainTopic && <p className="text-sm text-zinc-500 mt-1">{day.mainTopic}</p>}
-                            </div>
-                          ))}
+                        <div className="space-y-6">
+                          {Object.entries(
+                            training.schedule.reduce((acc, item) => {
+                              const dayKey = `Day ${item.day}`;
+                              if (!acc[dayKey]) {
+                                acc[dayKey] = [];
+                              }
+                              acc[dayKey].push(item);
+                              return acc;
+                            }, {} as Record<string, typeof training.schedule>)
+                          )
+                            .sort(([a], [b]) => {
+                              // Sort by day number
+                              const dayA = parseInt(a.replace('Day ', ''));
+                              const dayB = parseInt(b.replace('Day ', ''));
+                              return dayA - dayB;
+                            })
+                            .map(([dayLabel, dayItems]) => {
+                              // Sort items within each day by order or time
+                              const sortedItems = [...dayItems].sort((a, b) => {
+                                if (a.order !== undefined && b.order !== undefined) {
+                                  return a.order - b.order;
+                                }
+                                // Fallback to time comparison if order is not available
+                                return (a.time || '').localeCompare(b.time || '');
+                              });
+
+                              return (
+                                <div key={dayLabel} className="border-l-2 border-zinc-200 pl-4 relative">
+                                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-teal-500" />
+                                  <h4 className="text-sm font-bold text-teal-600 mb-3">{dayLabel}</h4>
+                                  <div className="space-y-3 ml-2">
+                                    {sortedItems.map((item, idx) => (
+                                      <div key={idx} className="pb-2 border-b border-zinc-100 last:border-b-0 last:pb-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 mb-1">
+                                          <span className="text-sm text-zinc-500">{item.time}</span>
+                                        </div>
+                                        <h5 className="font-semibold text-zinc-800">{item.topic}</h5>
+                                        {item.mainTopic && <p className="text-sm text-zinc-500 mt-1">{item.mainTopic}</p>}
+                                        {item.heading && <p className="text-xs text-zinc-400 mt-1 italic">{item.heading}</p>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
                         </div>
                       </section>
                     )}

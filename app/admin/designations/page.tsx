@@ -74,6 +74,7 @@ export default function DesignationsPage() {
   const [newLPData, setNewLPData] = useState<{ title: string; description: string; frequency?: string; deckId?: string; categoryId?: string }>({ title: '', description: '', frequency: '' });
   const [lpSelectedTrainings, setLpSelectedTrainings] = useState<SelectedTraining[]>([]);
   const [assignMode, setAssignMode] = useState<'training' | 'learning-path'>('training');
+  const [editingLearningPathId, setEditingLearningPathId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -491,14 +492,21 @@ export default function DesignationsPage() {
     }
 
     try {
-      const response = await fetch('/api/learning-paths', {
-        method: 'POST',
+      const url = editingLearningPathId 
+        ? `/api/learning-paths/${editingLearningPathId}`
+        : '/api/learning-paths';
+      const method = editingLearningPathId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           title: newLPData.title,
           description: newLPData.description,
           frequency: newLPData.frequency,
+          deckId: newLPData.deckId,
+          categoryId: newLPData.categoryId,
           trainings: lpSelectedTrainings
         })
       });
@@ -508,13 +516,14 @@ export default function DesignationsPage() {
         setShowLPCreationModal(false);
         setNewLPData({ title: '', description: '', frequency: '' });
         setLpSelectedTrainings([]);
+        setEditingLearningPathId(null);
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to create Learning Path");
+        alert(data.error || `Failed to ${editingLearningPathId ? 'update' : 'create'} Learning Path`);
       }
     } catch (error) {
-      console.error("Error creating LP:", error);
-      alert("Failed to create Learning Path");
+      console.error(`Error ${editingLearningPathId ? 'updating' : 'creating'} LP:`, error);
+      alert(`Failed to ${editingLearningPathId ? 'update' : 'create'} Learning Path`);
     }
   };
 
@@ -902,11 +911,59 @@ export default function DesignationsPage() {
         fetchAllTrainings={fetchAllTrainings}
         fetchLearningDecks={fetchLearningDecks}
         learningPaths={learningPaths}
+        onEdit={(lp) => {
+          // Set up edit mode
+          setNewLPData({
+            title: lp.title,
+            description: lp.description || '',
+            frequency: lp.frequency || '',
+            deckId: lp.deckId || undefined,
+            categoryId: lp.categoryId || undefined
+          });
+          // Convert learning path trainings to SelectedTraining format
+          const selectedTrainings = lp.trainings.map((t: any) => ({
+            id: t._id || t.trainingId?._id || String(t.trainingId),
+            trainingId: t.trainingId?._id || t.trainingId,
+            title: t.title || t.trainingId?.programTitle || 'Untitled',
+            courseOverview: t.courseOverview || '',
+            frequency: t.frequency || ''
+          }));
+          setLpSelectedTrainings(selectedTrainings);
+          setEditingLearningPathId(lp._id);
+          setShowLPCreationModal(true);
+          fetchAllTrainings();
+          fetchLearningDecks();
+        }}
+        onDelete={async (id) => {
+          try {
+            const response = await fetch(`/api/learning-paths/${id}`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+
+            if (response.ok) {
+              await fetchLearningPaths();
+            } else {
+              const data = await response.json();
+              alert(data.error || "Failed to delete Learning Path");
+            }
+          } catch (error) {
+            console.error("Error deleting LP:", error);
+            alert("Failed to delete Learning Path");
+          }
+        }}
       />
 
       <LearningPathCreationModal
         showLPCreationModal={showLPCreationModal}
-        setShowLPCreationModal={setShowLPCreationModal}
+        setShowLPCreationModal={(show) => {
+          setShowLPCreationModal(show);
+          if (!show) {
+            setEditingLearningPathId(null);
+            setNewLPData({ title: '', description: '', frequency: '' });
+            setLpSelectedTrainings([]);
+          }
+        }}
         newLPData={newLPData}
         setNewLPData={setNewLPData}
         allTrainings={allTrainings}
@@ -914,6 +971,7 @@ export default function DesignationsPage() {
         setLpSelectedTrainings={setLpSelectedTrainings}
         handleCreateLearningPath={handleCreateLearningPath}
         learningDecks={learningDecks}
+        editingLearningPathId={editingLearningPathId}
       />
     </div>
   );
