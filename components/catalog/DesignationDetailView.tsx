@@ -190,9 +190,9 @@ export default function DesignationDetailView({
                                 )}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (canOpenModal) {
-                                        setSelectedTraining(training);
-                                    }
+                                    // if (canOpenModal) {
+                                    //     setSelectedTraining(training);
+                                    // }
                                 }}
                             >
                                 <div className={clsx(
