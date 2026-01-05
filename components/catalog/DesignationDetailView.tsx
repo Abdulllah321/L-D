@@ -86,32 +86,61 @@ export default function DesignationDetailView({
     };
 
     // Render Training Card
-    const renderTrainingCard = (training: ITraining, index: number) => (
-        <motion.div
-            key={training._id as string}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.3 }}
-            layout
-            className="group cursor-pointer"
-            onClick={() => setSelectedTraining(training)}
-        >
-            <div className="bg-white rounded-xl border-2 border-zinc-200 p-5 hover:border-teal-400 hover:shadow-lg transition-all duration-300">
-                <h4 className="font-bold text-zinc-900 mb-2 group-hover:text-teal-600 transition-colors">
-                    {training.programTitle}
-                </h4>
-                <p className="text-sm text-zinc-600 line-clamp-2 mb-3">
-                    {training.outcomesBenefits || training.programObjective || 'No description available'}
-                </p>
-                {training.frequency && (
-                    <div className="flex items-center gap-2 text-xs text-zinc-500">
-                        <IconCalendar size={14} />
-                        <span>{training.frequency}</span>
-                    </div>
+    const renderTrainingCard = (training: ITraining, index: number) => {
+        // Check if this is a custom training (no valid training data - empty programObjective and outcomesBenefits)
+        const isCustomTraining = !training.programObjective || (!training.programObjective && !training.outcomesBenefits);
+        const canOpenModal = !isCustomTraining && training._id && training.programObjective;
+
+        return (
+            <motion.div
+                key={String(training._id) || `custom-${index}`}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: index * 0.05, duration: 0.3 }}
+                layout
+                className={clsx(
+                    "group",
+                    canOpenModal ? "cursor-pointer" : "cursor-default"
                 )}
-            </div>
-        </motion.div>
-    );
+                onClick={(e) => {
+                    e.stopPropagation();
+                    if (canOpenModal) {
+                        setSelectedTraining(training);
+                    }
+                }}
+            >
+                <div className={clsx(
+                    "bg-white rounded-xl border-2 p-5 transition-all duration-300",
+                    canOpenModal 
+                        ? "border-zinc-200 hover:border-teal-400 hover:shadow-lg" 
+                        : "border-zinc-200 opacity-90"
+                )}>
+                    <h4 className={clsx(
+                        "font-bold mb-2 transition-colors",
+                        canOpenModal 
+                            ? "text-zinc-900 group-hover:text-teal-600" 
+                            : "text-zinc-700"
+                    )}>
+                        {training.programTitle}
+                    </h4>
+                    <p className="text-sm text-zinc-600 line-clamp-2 mb-3">
+                        {training.outcomesBenefits || training.programObjective || 'No description available'}
+                    </p>
+                    {training.frequency && (
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                            <IconCalendar size={14} />
+                            <span>{training.frequency}</span>
+                        </div>
+                    )}
+                    {isCustomTraining && (
+                        <div className="mt-2 text-xs text-zinc-400 italic">
+                            Custom training - No detailed information available
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        );
+    };
 
     // Render Learning Path Card
     const renderLearningPathCard = (item: CatalogItem & { type: 'learning-path' }, index: number) => {
@@ -122,7 +151,7 @@ export default function DesignationDetailView({
 
         return (
             <motion.div
-                key={item.data._id as string}
+                key={String(item.data._id)}
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
@@ -144,37 +173,63 @@ export default function DesignationDetailView({
 
                 {/* Trainings List */}
                 <div className="p-4 space-y-3">
-                    {item.trainings.map((training, trainingIndex) => (
-                        <motion.div
-                            key={training._id as string || trainingIndex}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: trainingIndex * 0.03 }}
-                            className="cursor-pointer group"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedTraining(training);
-                            }}
-                        >
-                            <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-teal-50 transition-colors border border-zinc-100 hover:border-teal-200">
-                                <div className="w-2 h-2 rounded-full bg-teal-400 mt-2 flex-shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                    <h5 className="font-semibold text-zinc-900 group-hover:text-teal-600 transition-colors">
-                                        {training.programTitle}
-                                    </h5>
-                                    <p className="text-sm text-zinc-600 mt-1 line-clamp-2">
-                                        {training.outcomesBenefits || training.programObjective || '-'}
-                                    </p>
-                                    {training.frequency && (
-                                        <div className="flex items-center gap-1 text-xs text-zinc-500 mt-2">
-                                            <IconCalendar size={12} />
-                                            <span>{training.frequency}</span>
-                                        </div>
-                                    )}
+                    {item.trainings.map((training, trainingIndex) => {
+                        // Check if this is a custom training (no valid training data - empty programObjective and outcomesBenefits)
+                        const isCustomTraining = !training.programObjective || (!training.programObjective && !training.outcomesBenefits);
+                        const canOpenModal = !isCustomTraining && training._id && training.programObjective;
+
+                        return (
+                            <motion.div
+                                key={String(training._id) || `custom-${trainingIndex}`}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: trainingIndex * 0.03 }}
+                                className={clsx(
+                                    "group",
+                                    canOpenModal ? "cursor-pointer" : "cursor-default"
+                                )}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (canOpenModal) {
+                                        setSelectedTraining(training);
+                                    }
+                                }}
+                            >
+                                <div className={clsx(
+                                    "flex items-start gap-3 p-3 rounded-lg transition-colors border",
+                                    canOpenModal
+                                        ? "border-zinc-100 hover:bg-teal-50 hover:border-teal-200"
+                                        : "border-zinc-100 opacity-90"
+                                )}>
+                                    <div className="w-2 h-2 rounded-full bg-teal-400 mt-2 shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <h5 className={clsx(
+                                            "font-semibold transition-colors",
+                                            canOpenModal
+                                                ? "text-zinc-900 group-hover:text-teal-600"
+                                                : "text-zinc-700"
+                                        )}>
+                                            {training.programTitle}
+                                        </h5>
+                                        <p className="text-sm text-zinc-600 mt-1 line-clamp-2">
+                                            {training.outcomesBenefits || training.programObjective || '-'}
+                                        </p>
+                                        {training.frequency && (
+                                            <div className="flex items-center gap-1 text-xs text-zinc-500 mt-2">
+                                                <IconCalendar size={12} />
+                                                <span>{training.frequency}</span>
+                                            </div>
+                                        )}
+                                        {isCustomTraining && (
+                                            <div className="mt-2 text-xs text-zinc-400 italic">
+                                                Custom training - No detailed information available
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </motion.div>
         );
