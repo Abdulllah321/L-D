@@ -40,7 +40,7 @@ export default function Logo() {
                   <img
                     src={logo.src}
                     alt={logo.alt}
-                    className="h-12 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16 lg:h-20"
+                    className="h-8 w-auto object-contain opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-16 lg:h-20"
                   />
                 </div>
               ))}
