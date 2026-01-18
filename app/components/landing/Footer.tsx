@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Book, Rocket, User, Mail, Phone, MapPin } from 'lucide-react';
+import { Rocket, User, Mail, Phone, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 export default function FooterGlow() {
   return (
     <footer className="relative z-10 mt-8 w-full overflow-hidden pt-0 pb-8">
@@ -54,13 +55,14 @@ export default function FooterGlow() {
       </div>
       <div className="glass relative mx-auto flex max-w-6xl flex-col items-center gap-8 rounded-2xl px-6 py-10 md:flex-row md:items-start md:justify-between md:gap-12">
         <div className="flex flex-col items-center md:items-start">
-          <Link href="/" className="mb-4 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-blue-600 text-2xl font-extrabold text-white shadow-md">
-              <Book className="h-5 w-5" />
-            </span>
-            <span className="bg-gradient-to-br from-teal-600 via-blue-600 to-indigo-700 bg-clip-text text-xl font-semibold tracking-tight text-transparent">
-              Learning Portal
-            </span>
+          <Link href="/" className="mb-4 flex items-center gap-3">
+            <Image
+              src="/image.png"
+              alt="Learning & Development"
+              width={220}
+              height={48}
+              className="h-10 w-auto object-contain"
+            />
           </Link>
           <p className="text-gray-700 mb-6 max-w-xs text-center text-sm md:text-left">
             Empowering branch operations professionals with structured learning pathways,

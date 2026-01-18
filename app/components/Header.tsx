@@ -54,14 +54,14 @@ export default function Header() {
           {/* Logo */}
           <button
             onClick={() => router.push("/")}
-            className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white shadow-sm border border-zinc-100 hover:scale-105 transition-transform"
+            className="relative flex items-center justify-center h-10 px-2 hover:scale-105 transition-transform"
           >
             <Image
-              src="/logo.png"
-              alt="Logo"
-              width={24}
-              height={24}
-              className="object-contain"
+              src="/image.png"
+              alt="Learning & Development"
+              width={160}
+              height={40}
+              className="h-8 w-auto object-contain"
             />
           </button>
 

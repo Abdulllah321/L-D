@@ -33,6 +33,14 @@ export interface TestimonialCardProps {
   [key: string]: any;
 }
 
+const getInitials = (fullName: string) =>
+  fullName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0]?.toUpperCase())
+    .join('');
+
 export function TestimonialCard({
   description,
   name,
@@ -66,13 +74,19 @@ export function TestimonialCard({
       </div>
 
       <div className="flex w-full items-center justify-start gap-5 select-none">
-        <img
-          width={40}
-          height={40}
-          src={img || ''}
-          alt={name}
-          className="size-10 rounded-full ring-1 ring-teal-500/20 ring-offset-2"
-        />
+        {img ? (
+          <img
+            width={40}
+            height={40}
+            src={img}
+            alt={name}
+            className="size-10 rounded-full object-cover ring-1 ring-teal-500/20 ring-offset-2"
+          />
+        ) : (
+          <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-blue-600 text-xs font-semibold text-white ring-1 ring-teal-500/20 ring-offset-2">
+            {getInitials(name)}
+          </div>
+        )}
 
         <div>
           <p className="text-foreground font-medium">{name}</p>
@@ -84,142 +98,110 @@ export function TestimonialCard({
 }
 const testimonials = [
   {
-    name: 'Ahmed Hassan',
+    name: 'Zahoor Khattak',
+    role: 'Deputy General Manager – North',
+    description: (
+      <p>
+        A commendable initiative undertaken by the bank, enabling its young professionals to autonomously delineate their hierarchical progression and career trajectories in alignment with their intrinsic passions and individual competencies.
+      </p>
+    ),
+  },
+  {
+    name: 'Raza Ahmed Khan',
+    role: 'Branch Manager',
+    description: (
+      <p>
+        Training session was very interesting and knowledgeable. I am fully satisfied regarding this training and thank the learning department for arranging this session.
+      </p>
+    ),
+  },
+  {
+    name: 'Imran Ali Zafar',
+    role: 'Branch Manager',
+    description: (
+      <p>
+        Integrates practical case studies, digital tools, and trade compliance insights to make the SME and Trade course more impactful and future-ready.
+      </p>
+    ),
+  },
+  {
+    name: 'Saeed Ahmad',
     role: 'Branch Service Manager',
-    img: 'https://randomuser.me/api/portraits/men/22.jpg',
     description: (
       <p>
-        The Learning Catalog has transformed how I approach my team&apos;s development.
-        <Highlight>
-          The clear pathways helped me identify skill gaps and create targeted training plans.
-        </Highlight>{' '}
-        My branch performance has improved significantly since implementing structured learning.
+        Had an amazing opportunity to learn with grace. Thanks to Usman sb and the L&amp;D team, especially Ms Zubia and Majid sb, for making the journey memorable.
       </p>
     ),
   },
   {
-    name: 'Fatima Ali',
-    role: 'Service Ambassador',
-    img: 'https://randomuser.me/api/portraits/women/33.jpg',
+    name: 'Muhammad Usman',
+    role: 'Trainer',
     description: (
       <p>
-        As a new SA, I was overwhelmed by all the training options available.
-        <Highlight>
-          The role-based pathways made it easy to find exactly what I needed to excel.
-        </Highlight>{' '}
-        I completed my core trainings in just 3 months and feel much more confident.
+        The journey would not have been complete without the great support from Ms Zubia and Majid, whose guidance elevated the entire learning experience.
       </p>
     ),
   },
   {
-    name: 'Muhammad Khan',
-    role: 'Branch Service Officer',
-    img: 'https://randomuser.me/api/portraits/men/32.jpg',
+    name: 'Qaiser Jadoon',
+    role: 'Regional Manager',
     description: (
       <p>
-        The Regular Learning Track provided a clear roadmap for my career growth.
-        <Highlight>
-          I progressed from BSO to BSM within 18 months by following the structured pathway.
-        </Highlight>{' '}
-        The program sheets were especially helpful in preparing for each training.
+        Great job done by trainers and the entire L&amp;D team for organising the event and thanks to all trainees who attended and made it successful. Hoping everyone starts a new journey with full zeal and zest.
       </p>
     ),
   },
   {
-    name: 'Ayesha Malik',
-    role: 'Area Operations Manager',
-    img: 'https://randomuser.me/api/portraits/women/44.jpg',
+    name: 'Ammar Azad',
+    role: 'Trainee',
     description: (
       <p>
-        Being selected for the Hi-Po track was a game-changer for my career.
-        <Highlight>
-          The accelerated pathway exposed me to leadership concepts I wouldn&apos;t have discovered otherwise.
-        </Highlight>{' '}
-        I&apos;m now better equipped to handle regional responsibilities.
+        It was overall a good experience. As a fresh graduate starting my banking career, I learned a lot from the training. Special thanks to Madam Zubia and Sir Majid for their continuous support and excellent management throughout the entire program.
       </p>
     ),
   },
   {
-    name: 'Hassan Raza',
-    role: 'Regional Operations Manager',
-    img: 'https://randomuser.me/api/portraits/men/55.jpg',
+    name: 'Muhammad Ishaq Mir',
+    role: 'VP / AOM',
     description: (
       <p>
-        The Learning Catalog helped me understand the complete journey from frontline to leadership.
-        <Highlight>
-          I use it regularly to mentor my team and guide their career development.
-        </Highlight>{' '}
-        The transparency of pathways builds trust and motivation across all levels.
+        Very well done L&amp;D team and congratulations to all participants for the successful completion of the BSM Emerging Training.
       </p>
     ),
   },
   {
-    name: 'Sana Ahmed',
-    role: 'Trainee Branch SA',
-    img: 'https://randomuser.me/api/portraits/women/67.jpg',
+    name: 'Naqash Haider',
+    role: 'Bank Teller',
     description: (
       <p>
-        Starting as a trainee, I was unsure about my learning path.
-        <Highlight>
-          The catalog showed me exactly which trainings to complete and in what order.
-        </Highlight>{' '}
-        I feel prepared and ready to take on my role as a full Service Ambassador.
+        I&apos;m honored to have participated in the Emerging BSM Program, a flagship initiative that exemplifies dedication to talent development and leadership excellence. Grateful to the organizers and facilitators for a well-structured and engaging program.
       </p>
     ),
   },
   {
-    name: 'Omar Sheikh',
-    role: 'Branch Service Manager',
-    img: 'https://randomuser.me/api/portraits/men/78.jpg',
+    name: 'Muhammad Basit Ullah',
+    role: 'Management Trainee Officer',
     description: (
       <p>
-        The interactive program sheets are incredibly detailed and practical.
-        <Highlight>
-          I can see the full agenda, trainers, and objectives before committing to a training.
-        </Highlight>{' '}
-        This transparency helps me plan my schedule and maximize learning outcomes.
+        Inspiring initiative. Great to see the bank investing in team building and empowering women through such engaging sessions.
       </p>
     ),
   },
   {
-    name: 'Zainab Hussain',
-    role: 'Service Ambassador',
-    img: 'https://randomuser.me/api/portraits/women/89.jpg',
+    name: 'Nadeem Yaqoob',
+    role: 'SVP / Area Operations Manager',
     description: (
       <p>
-        Customer satisfaction scores in my branch improved by 35% after completing the service excellence track.
-        <Highlight>
-          The refresher trainings keep my skills sharp and up-to-date.
-        </Highlight>{' '}
-        I recommend this portal to all new team members.
+        Amazing. Ittehad Summit translated corporate values into actionable leadership experiences.
       </p>
     ),
   },
   {
-    name: 'Bilal Iqbal',
-    role: 'Area Operations Manager',
-    img: 'https://randomuser.me/api/portraits/men/92.jpg',
+    name: 'Mohsina Rayees',
+    role: 'RVP',
     description: (
       <p>
-        The Hi-Po track challenged me with advanced governance and leadership modules.
-        <Highlight>
-          I gained exposure to strategic thinking and broader organizational perspectives.
-        </Highlight>{' '}
-        This accelerated my readiness for regional responsibilities.
-      </p>
-    ),
-  },
-  {
-    name: 'Nida Farooq',
-    role: 'Branch Service Officer',
-    img: 'https://randomuser.me/api/portraits/women/29.jpg',
-    description: (
-      <p>
-        The Regular Learning Track provided a solid foundation for my role.
-        <Highlight>
-          Each training built on the previous one, creating a comprehensive skill set.
-        </Highlight>{' '}
-        I&apos;m now confident in handling complex customer interactions and branch operations.
+        Excellent job. It&apos;s truly amazing, Zubia. We enjoyed the Ittehad Summit in Karachi; it was superb and we learned a lot.
       </p>
     ),
   },
