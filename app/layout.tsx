@@ -22,7 +22,24 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: "Learning and Development",
-  description: "Open learning discovery platform for role-based pathways, skill development, and career advancement.",
+  description:
+    "Open learning discovery platform for role-based pathways, skill development, and career advancement.",
+  icons: {
+    icon: [
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
