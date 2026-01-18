@@ -7,7 +7,7 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div className="col-span-1 md:col-span-2">
                         <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-500 mb-4">
-                            Branch Ops Learning
+                            Learning & Development
                         </h3>
                         <p className="text-zinc-400 max-w-sm">
                             Empowering our team with the skills and knowledge needed to excel in branch operations.

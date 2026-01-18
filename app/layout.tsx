@@ -21,7 +21,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Branch Ops Learning Portal",
+  title: "Learning and Development",
   description: "Open learning discovery platform for role-based pathways, skill development, and career advancement.",
 };
 

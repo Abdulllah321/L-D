@@ -61,7 +61,7 @@ export default function FooterGlow() {
               alt="Learning & Development"
               width={220}
               height={48}
-              className="h-10 w-auto object-contain"
+              className="h-10 w-auto object-contain scale-130 origin-left"
             />
           </Link>
           <p className="text-gray-700 mb-6 max-w-xs text-center text-sm md:text-left">
