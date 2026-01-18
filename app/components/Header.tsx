@@ -61,7 +61,7 @@ export default function Header() {
               alt="Learning & Development"
               width={160}
               height={40}
-              className="h-8 w-auto object-contain"
+              className="h-8 w-auto object-contain scale-[1.2] origin-left"
             />
           </button>
 
