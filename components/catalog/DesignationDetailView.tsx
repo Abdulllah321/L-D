@@ -111,14 +111,14 @@ export default function DesignationDetailView({
             >
                 <div className={clsx(
                     "bg-white rounded-xl border-2 p-5 transition-all duration-300",
-                    canOpenModal 
-                        ? "border-zinc-200 hover:border-teal-400 hover:shadow-lg" 
+                    canOpenModal
+                        ? "border-zinc-200 hover:border-teal-400 hover:shadow-lg"
                         : "border-zinc-200 opacity-90"
                 )}>
                     <h4 className={clsx(
                         "font-bold mb-2 transition-colors",
-                        canOpenModal 
-                            ? "text-zinc-900 group-hover:text-teal-600" 
+                        canOpenModal
+                            ? "text-zinc-900 group-hover:text-teal-600"
                             : "text-zinc-700"
                     )}>
                         {training.programTitle}
@@ -258,7 +258,7 @@ export default function DesignationDetailView({
             >
                 {/* Connection Line */}
                 <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-zinc-300 to-zinc-200" />
-                
+
                 <div className="ml-8 mb-6">
                     <motion.button
                         onClick={() => toggleAnnualType(fullKey)}
@@ -326,7 +326,7 @@ export default function DesignationDetailView({
     ) => {
         const trackKey = trackType;
         const isExpanded = expandedTracks.has(trackKey);
-        const hasContent = 
+        const hasContent =
             trackData.regular.items.length > 0 ||
             trackData.annualRegular.items.length > 0 ||
             trackData.annualEcourse.items.length > 0;
@@ -491,7 +491,7 @@ export default function DesignationDetailView({
                                             : "bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200"
                                     )}
                                 >
-                                    {sub.title}
+                                    {sub.title.replace(/hi-?po/gi, "Advanced Track")}
                                 </motion.button>
                             ))}
                         </div>
@@ -526,7 +526,7 @@ export default function DesignationDetailView({
                                 {/* Hi-Po Track */}
                                 {renderTrackSection(
                                     'hi-po',
-                                    'High Potential (Hi-Po) Track',
+                                    'Advanced Learning Track',
                                     <IconBolt size={28} />,
                                     {
                                         gradient: 'bg-gradient-to-r from-amber-50 to-amber-100/50',
