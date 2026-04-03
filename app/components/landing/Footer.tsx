@@ -141,7 +141,7 @@ export default function FooterGlow() {
                   href="/catalog"
                   className="text-gray-600 hover:text-blue-600 transition-colors"
                 >
-                  Hi-Po Track
+                  Advanced Track
                 </Link>
               </li>
               <li>
