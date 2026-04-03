@@ -266,7 +266,7 @@ export default function LearningTracksIntro() {
           <TrackCard
             icon={Rocket}
             badge="Accelerated Pathway"
-            title="Hi-Po Learning Track"
+            title="Advanced Track"
             description="Accelerated pathway for high-potential talent, emphasizing leadership readiness, broader exposure, and strengthened governance & service disciplines."
             features={[
               "Leadership Readiness",
