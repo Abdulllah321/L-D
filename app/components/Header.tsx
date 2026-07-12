@@ -75,9 +75,14 @@ export default function Header() {
                 onClick={() => router.push("/")}
               />
               <NavItem
-                label="Catalog"
-                isActive={pathname?.startsWith("/catalog")}
+                label="Branch Ops"
+                isActive={pathname === "/catalog" || (pathname?.startsWith("/catalog") && !pathname?.startsWith("/catalog/retail"))}
                 onClick={() => router.push("/catalog")}
+              />
+              <NavItem
+                label="Retail Catalog"
+                isActive={pathname?.startsWith("/retail")}
+                onClick={() => router.push("/retail")}
               />
               <NavItem
                 label="Pathways"
@@ -90,11 +95,11 @@ export default function Header() {
 
           {/* Desktop CTA */}
           <button
-            onClick={() => router.push("/catalog")}
+            onClick={() => router.push("/retail")}
             className="hidden md:flex group relative px-5 py-2 rounded-full bg-zinc-900 text-white text-sm font-medium transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
           >
-            <span className="relative z-10">Explore</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10">Explore Retail</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </button>
 
           {/* Mobile Menu Toggle */}
@@ -121,14 +126,15 @@ export default function Header() {
               className="absolute top-full left-0 right-0 mt-2 p-2 bg-transparent backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl shadow-zinc-500/10 overflow-hidden flex flex-col gap-1 md:hidden min-w-[200px]"
             >
               <MobileNavItem label="Home" onClick={() => { router.push("/"); setIsMobileMenuOpen(false); }} isActive={pathname === "/"} />
-              <MobileNavItem label="Catalog" onClick={() => { router.push("/catalog"); setIsMobileMenuOpen(false); }} isActive={pathname?.startsWith("/catalog") || false} />
+              <MobileNavItem label="Branch Ops" onClick={() => { router.push("/catalog"); setIsMobileMenuOpen(false); }} isActive={pathname?.startsWith("/catalog") && !pathname?.startsWith("/catalog/retail")} />
+              <MobileNavItem label="Retail Catalog" onClick={() => { router.push("/retail"); setIsMobileMenuOpen(false); }} isActive={pathname?.startsWith("/retail")} />
               <MobileNavItem label="Pathways" onClick={() => { handleNavClick("/", "pathways"); setIsMobileMenuOpen(false); }} isActive={false} />
               <div className="h-px bg-zinc-100 my-1" />
               <button
-                onClick={() => { router.push("/catalog"); setIsMobileMenuOpen(false); }}
+                onClick={() => { router.push("/retail"); setIsMobileMenuOpen(false); }}
                 className="w-full relative px-4 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-medium transition-all active:scale-[0.98] text-center"
               >
-                Explore Catalog
+                Explore Retail
               </button>
             </motion.div>
           )}

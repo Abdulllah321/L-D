@@ -1,0 +1,44 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Department {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  code        String      @unique // e.g. "RETAIL", "BRANCH_OPS"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  jobFamilies JobFamily[]
+
+  @@index([code])
+}
+
+model JobFamily {
+  id             String          @id @default(uuid())
+  name           String
+  departmentId   String
+  department     Department      @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  learningTracks LearningTrack[]
+
+  @@unique([name, departmentId])
+  @@index([departmentId])
+}
+
+model LearningTrack {
+  id          String    @id @default(uuid())
+  name        String
+  jobFamilyId String
+  jobFamily   JobFamily @relation(fields: [jobFamilyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([name, jobFamilyId])
+  @@index([jobFamilyId])
+}

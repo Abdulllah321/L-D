@@ -1,7 +1,7 @@
 "use client";
 
 import Hero from "./components/landing/Hero";
-import LearningTracksIntro from "./components/landing/LearningTracksIntro";
+import DepartmentSelector from "./components/landing/DepartmentSelector";
 import DesignationCatalog from "./components/landing/DesignationCatalog";
 import DomeGallery from "./components/landing/DomeGallery";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ export default function Home() {
       <Header />
       <main className="bg-gray-50 ">
         <Hero />
-        <LearningTracksIntro />
+        <DepartmentSelector />
         <div className="py-24 px-4">
           {/* Header with Masking Animation */}
           <motion.div

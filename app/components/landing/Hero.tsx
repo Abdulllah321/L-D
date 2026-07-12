@@ -9,11 +9,12 @@ export default function Hero() {
     const router = useRouter();
 
     const handleExploreClick = () => {
-        router.push('/catalog');
+        const element = document.getElementById("departments");
+        if (element) element.scrollIntoView({ behavior: "smooth" });
     };
 
     const handlePathwaysClick = () => {
-        const element = document.getElementById("pathways");
+        const element = document.getElementById("departments");
         if (element) element.scrollIntoView({ behavior: "smooth" });
     };
 
@@ -50,7 +51,7 @@ export default function Hero() {
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
                     </span>
                     <span className="text-sm font-medium tracking-wide text-zinc-600">
-                        Branch Operations Learning Portal
+                        Learning & Development Hub
                     </span>
                 </motion.div>
 
@@ -75,7 +76,7 @@ export default function Hero() {
                     transition={{ duration: 0.6, delay: 0.6 }}
                     className="max-w-2xl mx-auto text-lg md:text-xl text-zinc-100 leading-relaxed mb-10"
                 >
-                    Branch Ops Open Learning Catalog is the modern training discovery platform for role-based pathways, skill development, and career advancement.
+                    Explore our modern training discovery platforms. Access role-based learning catalogs, core capability roadmaps, and career pathways.
                 </motion.p>
 
                 {/* Buttons */}
@@ -87,16 +88,16 @@ export default function Hero() {
                 >
                     <button
                         onClick={handleExploreClick}
-                        className="group relative w-full sm:w-auto px-8 py-4 bg-zinc-900 text-white rounded-full font-semibold transition-all hover:scale-105 active:scale-100 shadow-[0_6px_0_rgb(24,24,27),0_0_0_2px_#ffffff,inset_0_1px_0_rgba(255,255,255,0.4)] active:shadow-[0_0_0_2px_#ffffff,inset_0_1px_0_rgba(255,255,255,0.4)] active:translate-y-[6px] flex items-center justify-center gap-2 overflow-hidden pointer-events-auto"
+                        className="group relative w-full sm:w-auto px-8 py-4 bg-zinc-900 text-white rounded-full font-semibold transition-all hover:scale-105 active:scale-100 shadow-[0_6px_0_rgb(24,24,27),0_0_0_2px_#ffffff,inset_0_1px_0_rgba(255,255,255,0.4)] active:shadow-[0_0_0_2px_#ffffff,inset_0_1px_0_rgba(255,255,255,0.4)] active:translate-y-[6px] flex items-center justify-center gap-2 overflow-hidden pointer-events-auto cursor-pointer"
                     >
                         <div className="bg-gradient-to-t from-white/10 to-transparent via-white/5 absolute top-0 left-0 w-full h-full rounded-full" />
-                        <span className="relative z-10">Explore Catalog</span>
+                        <span className="relative z-10">Select Department</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
                     </button>
 
                     <button
                         onClick={handlePathwaysClick}
-                        className="group w-full sm:w-auto px-8 py-4 bg-white text-zinc-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-100 shadow-[0_6px_0_rgb(228,228,231),0_0_0_2px_#ffffff,inset_0_0_0_1px_rgb(228,228,231)] active:shadow-[0_0_0_2px_#ffffff,inset_0_0_0_1px_rgb(228,228,231)] active:translate-y-[6px] flex items-center justify-center gap-2 overflow-hidden pointer-events-auto"
+                        className="group w-full sm:w-auto px-8 py-4 bg-white text-zinc-900 rounded-full font-semibold transition-all hover:scale-105 active:scale-100 shadow-[0_6px_0_rgb(228,228,231),0_0_0_2px_#ffffff,inset_0_0_0_1px_rgb(228,228,231)] active:shadow-[0_0_0_2px_#ffffff,inset_0_0_0_1px_rgb(228,228,231)] active:translate-y-[6px] flex items-center justify-center gap-2 overflow-hidden pointer-events-auto cursor-pointer"
                     >
                         <PlayCircle className="w-5 h-5 text-zinc-500 group-hover:text-zinc-900 transition-colors" />
                         <span>View Pathways</span>
